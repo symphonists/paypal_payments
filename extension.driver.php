@@ -4,50 +4,49 @@
   require_once(TOOLKIT . '/class.entrymanager.php');
   require_once(TOOLKIT . '/class.fieldmanager.php');
 
-	Class extension_securetrading_payments extends Extension
+	Class extension_paypal_payments extends Extension
 	{	  
 	/*-------------------------------------------------------------------------
 		Extension definition
 	-------------------------------------------------------------------------*/
 		public function about()
 		{
-			return array('name' => 'SecureTrading Payments',
+			return array('name' => 'PayPal Payments',
 						 'version' => '0.1',
-						 'release-date' => '2009-02-23',
-						 'author' => array('name' => 'Icelab',
-										   'website' => 'http://www.icelab.com.au',
-										   'email' => 'hello@icelab.com.au'),
- 						 'description' => 'Allows you to process payments using SecureTrading Payment Pages'
+						 'release-date' => '2009-05-04',
+						 'author' => array('name' => 'Max Wheeler',
+										   'website' => 'http://makenosound.com/',
+										   'email' => 'max@makenosound.com'),
+ 						 'description' => 'Allows you to process and track PayPal payments'
 				 		);
 		}
 		
 		public function uninstall()
 		{
 			# Remove tables
-			$this->_Parent->Database->query("DROP TABLE `tbl_stpayments_logs`");
+			$this->_Parent->Database->query("DROP TABLE `tbl_paypalpayments_logs`");
 			
 			# Remove preferences
-      $this->_Parent->Configuration->remove('st-payments');
-      $this->_Parent->saveConfig();
+			$this->_Parent->Configuration->remove('paypal-payments');
+			$this->_Parent->saveConfig();
 		}
 		
 		public function install()
 		{
 		  # Create tables
 		  $this->_Parent->Database->query("
-				CREATE TABLE IF NOT EXISTS `tbl_stpayments_logs` (
-          `id` int(11) unsigned NOT NULL auto_increment,
-          `address` varchar(255) NOT NULL,
-          `currency` varchar(3) NOT NULL,
-          `inputamount` decimal(10,2) NOT NULL,
-          `name` varchar(255) NOT NULL,
-          `orderref` varchar(255) NOT NULL,
-          `postcode` varchar(255) NOT NULL,
-          `stauthcode` varchar(255) NOT NULL,
-          `streference` varchar(255) NOT NULL,
-          `stresult` int(1) NOT NULL,
-          `timestamp` datetime NOT NULL,
-          `truncccnumber` int(4) NOT NULL,
+				CREATE TABLE IF NOT EXISTS `tbl_paypalpayments_logs` (
+					`id` int(11) unsigned NOT NULL auto_increment,
+					`txn_id` varchar(255) NOT NULL,
+					`txn_type` varchar(255) NOT NULL,
+					`auth_amount` decimal(10,2) NOT NULL,
+					`auth_id` varchar(19) NOT NULL,
+					`payment_date` datetime NOT NULL,
+					`payment_status` varchar(255) NOT NULL,
+					`payer_email` varchar(255) NOT NULL,
+					`payer_status` varchar(255) NOT NULL,
+					`payment_type` varchar(255) NOT NULL,
+					`tax` varchar(255) NOT NULL,
 					PRIMARY KEY (`id`)
 				)
 			");
@@ -55,7 +54,8 @@
 		  return true;
 		}
 		
-		public function getSubscribedDelegates() {
+		public function getSubscribedDelegates()
+		{
 			return array(
 				array(
 					'page'		=> '/blueprints/events/edit/',
@@ -67,17 +67,17 @@
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'add_filter_to_event_editor'
 				),
-        array(
-        	'page' => '/blueprints/events/new/',
-        	'delegate' => 'AppendEventFilterDocumentation',
-        	'callback' => 'add_filter_documentation_to_event'
-        ),					
-        array(
-        	'page' => '/blueprints/events/edit/',
-        	'delegate' => 'AppendEventFilterDocumentation',
-        	'callback' => 'add_filter_documentation_to_event'
-        ),
-        array(
+				array(
+					'page' => '/blueprints/events/new/',
+					'delegate' => 'AppendEventFilterDocumentation',
+					'callback' => 'add_filter_documentation_to_event'
+				),					
+				array(
+					'page' => '/blueprints/events/edit/',
+					'delegate' => 'AppendEventFilterDocumentation',
+					'callback' => 'add_filter_documentation_to_event'
+				),
+				array(
 					'page' => '/frontend/',
 					'delegate' => 'EventPreSaveFilter',
 					'callback' => 'check_st_preferences'
@@ -95,28 +95,22 @@
 			);
 		}
 
-  	/*-------------------------------------------------------------------------
-  		Preferences
-  	-------------------------------------------------------------------------*/
+		/*-------------------------------------------------------------------------
+			Preferences
+			-------------------------------------------------------------------------*/
 
 		public function append_preferences($context)
 		{
-		  # Add new fieldset
+			# Add new fieldset
 			$group = new XMLElement('fieldset');
 			$group->setAttribute('class', 'settings');
-			$group->appendChild(new XMLElement('legend', 'SecureTrading Payments'));
-
-      # Add Site Reference field
-			$label = Widget::Label('Site Reference');
-			$label->appendChild(Widget::Input('settings[st-payments][site-reference]', General::Sanitize($this->_get_st_site_reference())));
-			$group->appendChild($label);
-			$group->appendChild(new XMLElement('p', 'Sign up at <a href="http://www.securetrading.com/applyhere.html">SecureTrading</a> to get your site reference key.', array('class' => 'help')));
-
-      # Add Merchant Email field
+			$group->appendChild(new XMLElement('legend', 'PayPal Payments'));
+			
+			# Add Merchant Email field
 			$label = Widget::Label('Merchant Email');
-			$label->appendChild(Widget::Input('settings[st-payments][merchant-email]', General::Sanitize($this->_get_st_merchant_email())));
+			$label->appendChild(Widget::Input('settings[paypal-payments][business]', General::Sanitize($this->_get_paypal_business())));
 			$group->appendChild($label);
-			$group->appendChild(new XMLElement('p', 'Make sure this matches the email associated with the site reference you entered above.', array('class' => 'help')));
+			$group->appendChild(new XMLElement('p', 'Your merchant email address or account ID of the payment recipient.', array('class' => 'help')));
 			
 			$context['wrapper']->appendChild($group);						
 		}
@@ -132,8 +126,8 @@
 		{
 		  $nav = array();
 		  $nav[] = array(
-				'location'	=> 260,
-				'name'		=> 'SecureTrading Payments',
+				'location'	=> 261,
+				'name'		=> 'PayPal Payments',
 				'children'	=> array(
 					array(
 						'name'		=> 'Transaction Logs',
@@ -148,14 +142,10 @@
   	/*-------------------------------------------------------------------------
   		Helpers
   	-------------------------------------------------------------------------*/
-
-  	private function _get_st_site_reference()
-		{
-			return $this->_Parent->Configuration->get('site-reference', 'st-payments');
-		}
 		
-		private function _get_st_merchant_email(){
-			return $this->_Parent->Configuration->get('merchant-email', 'st-payments');
+		private function _get_paypal_business()
+		{
+			return $this->_Parent->Configuration->get('business', 'paypal-payments');
 		}
 
 		public function _count_logs()
@@ -164,7 +154,7 @@
 				SELECT
 					COUNT(l.id) AS `total`
 				FROM
-					`tbl_stpayments_logs` AS l
+					`tbl_paypalpayments_logs` AS l
 			");
 		}
 		
@@ -176,11 +166,11 @@
 				SELECT
 					l.*
 				FROM
-					`tbl_stpayments_logs` AS l
+					`tbl_paypalpayments_logs` AS l
 				ORDER BY
 					l.timestamp DESC
 				LIMIT {$start}, {$per_page}
-			");	
+			");
 		}
 		
 		public function _get_logs()
@@ -189,7 +179,7 @@
 				SELECT
 					l.*
 				FROM
-					`tbl_stpayments_logs` AS l
+					`tbl_paypalpayments_logs` AS l
 				ORDER BY
 					l.timestamp DESC
 			");
@@ -200,7 +190,7 @@
 				SELECT
 					l.*
 				FROM
-					`tbl_stpayments_logs` AS l
+					`tbl_paypalpayments_logs` AS l
 				WHERE
 					l.id = '{$log_id}'
 				LIMIT 1
@@ -213,86 +203,85 @@
   	
   	public function add_filter_to_event_editor(&$context)
   	{
-		  $context['options'][] = array('st-payments', @in_array('st-payments', $context['selected']) ,'SecureTrading: Process payment');
+		  $context['options'][] = array('paypal-payments', @in_array('paypal-payments', $context['selected']) ,'PayPal Payments: Submit');
 		}
 		
 		public function add_filter_documentation_to_event($context)
 		{
-      if ( ! in_array('st-payments', $context['selected'])) return;
+      if ( ! in_array('paypal-payments', $context['selected'])) return;
 
-      $context['documentation'][] = new XMLElement('h3', 'SecureTrading Payments');
-			$context['documentation'][] = new XMLElement('p', 'You can pass data to the SecureTrading server by mapping fields to any of the variables/fields listed in the <a href="http://www.securetrading.com/download/DOC_COM_ST-PAYMENT-PAGES-SETUP-GUIDE[1].pdf">ST Payment Pages Setup Guide</a>. The example below shows how you would map <code>amount</code>, <code>name</code> and <code>description</code> to their SecureTrading equivalents:');
+      $context['documentation'][] = new XMLElement('h3', 'PayPal Payments');
+			$context['documentation'][] = new XMLElement('p', 'Blah:');
 			$code = '<input name="fields[amount]" type="text" />
 <input name="fields[first-name]" type="text" />
 <input name="fields[last-name]" type="text" />
 <textarea name="fields[description]"></textarea>
 
-<input name="st-payments[inputamount]" value="amount" type="hidden" />
-<input name="st-payments[name]" value="first-name,last-name" type="hidden" />
-<input name="st-payments[orderinfo]" value="description" type="hidden" />
+<input name="paypal-payments[inputamount]" value="amount" type="hidden" />
+<input name="paypal-payments[name]" value="first-name,last-name" type="hidden" />
+<input name="paypal-payments[orderinfo]" value="description" type="hidden" />
       ';
 			$context['documentation'][] = contentBlueprintsEvents::processDocumentationCode($code);
-			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to SecureTrading as the <code>orderref</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
-	  }
-	  
-	  public function check_st_preferences($context)
-	  {
-      if ( ! in_array('st-payments', $context['event']->eParamFILTERS)) return;
-	    
-	    $merchant =       $this->_get_st_site_reference();
-      $merchantemail =  $this->_get_st_merchant_email();
-      
-      if( ! isset($merchant) OR ! isset($merchantemail)){
-				$context['messages'][] = array('st-payments', FALSE, 'Both site reference and merchant email need to be set.');
+			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to PayPal as the <code>txn_id</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
+		}
+		
+		public function check_paypal_preferences($context)
+		{
+			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
+			
+			$business =  $this->_get_paypal_business();
+			
+			if( ! isset($business))
+			{
+				$context['messages'][] = array('paypal-payments', FALSE, 'You need to set the your business id/email in the preferences.');
 				return;
 			}
-	  }
-	  
-	  public function process_event_data($context)
-	  {			
+		}
+		
+		public function process_event_data($context)
+		{			
 			# Check if in included filters
-      if ( ! in_array('st-payments', $context['event']->eParamFILTERS)) return;
-      
-      # Set the default dataset
-      $data = array(
-        'orderref' =>       $context['entry']->get('id'),
-        'merchant' =>       $this->_get_st_site_reference(),
-        'merchantemail' =>  $this->_get_st_merchant_email()
-      );
-      
-      $mapping = $_POST['st-payments'];
-      
-      if ( isset($mapping))
-      {
-        foreach ($mapping as $key => $val)
-        {
-          # Join multiple fields unless it's the `requiredfields` field
-          if (strpos($val, ",") && $key != 'requiredfields') {
-            $values = explode(",", $val);
-            $combo = array();
-            foreach ($values as $val)
-            {
-              if (preg_match("/^'[^']+'$/", $val)) $combo[] = trim($val, "'");
-              else $combo[] = isset($context['fields'][$val]) ? $context['fields'][$val] : $val;
-            }
-            $mapping[$key] = implode(" ", $combo);
-          } else {
-            # If there's a match, map the value of the match. Else output the value.
-            if (preg_match("/^'[^']+'$/", $val)) $mapping[$key] = trim($val, "'");
-            else $mapping[$key] = isset($context['fields'][$val]) ? $context['fields'][$val] : $val;
-          }
-        }
-        $data = array_merge($data, $mapping);
-      }
-      
-      $encoded_data = "";      
-      foreach ($data as $key => $val)
-      {
-        $encoded_data[] = urlencode($key)."=".urlencode($val);
-      }
-      redirect('https://securetrading.net/authorize/form.cgi?' . implode("&",$encoded_data));
-      return;
-    }
+			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
+			
+			# Set the default dataset
+			$data = array(
+				'txn_id' =>       $context['entry']->get('id'),
+				'business' =>  $this->_get_paypal_business()
+			);
+			
+			$mapping = $_POST['st-payments'];
+			
+			if ( isset($mapping))
+			{
+				foreach ($mapping as $key => $val)
+				{
+					# Join multiple fields unless it's the `requiredfields` field
+					if (strpos($val, ",") && $key != 'requiredfields') {
+						$values = explode(",", $val);
+						$combo = array();
+						foreach ($values as $val)
+						{
+							if (preg_match("/^'[^']+'$/", $val)) $combo[] = trim($val, "'");
+							else $combo[] = isset($context['fields'][$val]) ? $context['fields'][$val] : $val;
+						}
+						$mapping[$key] = implode(" ", $combo);
+					} else {
+						# If there's a match, map the value of the match. Else output the value.
+						if (preg_match("/^'[^']+'$/", $val)) $mapping[$key] = trim($val, "'");
+						else $mapping[$key] = isset($context['fields'][$val]) ? $context['fields'][$val] : $val;
+					}
+				}
+				$data = array_merge($data, $mapping);
+			}
+			
+			$encoded_data = "";      
+			foreach ($data as $key => $val)
+			{
+				$encoded_data[] = urlencode($key)."=".urlencode($val);
+			}
+			redirect('https://securetrading.net/authorize/form.cgi?' . implode("&",$encoded_data));
+			return;
+		}
 	}
 
 /* End of file: extension.driver.php */
