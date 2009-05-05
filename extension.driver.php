@@ -127,7 +127,7 @@
 				'name'		=> 'PayPal Payments',
 				'children'	=> array(
 					array(
-						'name'		=> 'Transaction Logs',
+						'name'		=> 'Transactions',
 						'link'		=> '/logs/',
 						'limit'   => 'developer',
 					)
@@ -221,24 +221,28 @@
 <input name="paypal-payments[item_name]" value="description" type="hidden" />
       ';
 			$context['documentation'][] = contentBlueprintsEvents::processDocumentationCode($code);
-			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to PayPal as the <code>txn_id</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
+			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to PayPal as the <code>item_id</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
 		}
 		
-		public function check_paypal_preferences($context)
-		{
+		public function check_paypal_preferences(&$context)
+		{	
 			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
 			
 			$business = $this->_get_paypal_business();
 			
 			if( ! isset($business))
 			{
-				$context['messages'][] = array('paypal-payments', FALSE, 'You need to set the your business id/email in the preferences.');
+				$context['messages'][] = array(
+					'paypal-payments',
+					FALSE,
+					'You need to set the your business id/email in the preferences.'
+				);
 				return;
 			}
 		}
 		
 		public function process_event_data($context)
-		{			
+		{
 			# Check if in included filters
 			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
 			
@@ -283,7 +287,7 @@
 			
 			# Set the default dataset
 			$data = array(
-				'item_number' =>	$context['entry']->get('id'),
+				'invoice' =>	$context['entry']->get('id'),
 				'business' =>			$this->_get_paypal_business()
 			);
 			
@@ -319,13 +323,17 @@
 <head>
 <title>Continue to PayPal</title>
 </head>
-<body>
-<form method="post" action="https://www.paypal.com/cgi-bin/webscr">';
+<style type="text/css">button{background:#eee;border:3px #ccc solid;color:#444;display:block;font:normal 200%/1.4 Georgia, Palatino, serif;margin:19% auto 40px;padding:20px 40px;-moz-border-radius:30px;-webkit-border-radius:30px;cursor:pointer;}button:hover{background:#444;color:#fff;border-color:#222;}</style>
+<script type="text/javascript">
+document.write(\'<style type="text/css">button{display:none}</style>\');
+</script>
+<body onload="document.forms.paypal.submit();">
+<form id="paypal" method="post" action="https://www.paypal.com/cgi-bin/webscr">';
 			foreach($data as $field => $value)
 			{
 				$output .= '  <input type="hidden" name="' . $field .'" value="' . $value . '"/>';
 			}
-			$output .= '<button type="submit">Continue to PayPal</button>
+			$output .= '<button type="submit">Continue to PayPal to make payment</button>
 </form>
 </body>
 </html>';
