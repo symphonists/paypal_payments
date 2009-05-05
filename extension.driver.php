@@ -331,7 +331,7 @@ document.write(\'<style type="text/css">button{display:none}</style>\');
 <form id="paypal" method="post" action="https://www.paypal.com/cgi-bin/webscr">';
 			foreach($data as $field => $value)
 			{
-				$output .= '  <input type="hidden" name="' . $field .'" value="' . $value . '"/>';
+				$output .= '  <input type="hidden" name="' . $field .'" value="' . $value . '"/>' . "\n";
 			}
 			$output .= '<button type="submit">Continue to PayPal to make payment</button>
 </form>
