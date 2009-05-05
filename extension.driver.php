@@ -80,7 +80,7 @@
 				array(
 					'page' => '/frontend/',
 					'delegate' => 'EventPreSaveFilter',
-					'callback' => 'check_st_preferences'
+					'callback' => 'check_paypal_preferences'
 				),
 				array(
 					'page'		=> '/frontend/',
@@ -107,21 +107,18 @@
 			$group->appendChild(new XMLElement('legend', 'PayPal Payments'));
 			
 			# Add Merchant Email field
-			$label = Widget::Label('Merchant Email');
+			$label = Widget::Label('Merchant Email/Account ID');
 			$label->appendChild(Widget::Input('settings[paypal-payments][business]', General::Sanitize($this->_get_paypal_business())));
 			$group->appendChild($label);
-			$group->appendChild(new XMLElement('p', 'Your merchant email address or account ID of the payment recipient.', array('class' => 'help')));
+			$group->appendChild(new XMLElement('p', 'The merchant email address or account ID of the payment recipient.', array('class' => 'help')));
 			
-			$context['wrapper']->appendChild($group);						
+			$context['wrapper']->appendChild($group);
 		}
 
   	/*-------------------------------------------------------------------------
   		Navigation
   	-------------------------------------------------------------------------*/
   	
-  	#
-  	#   TODO: Need to remove nav item if logging not enabled
-  	#  	
 		public function fetchNavigation()
 		{
 		  $nav = array();
@@ -132,7 +129,7 @@
 					array(
 						'name'		=> 'Transaction Logs',
 						'link'		=> '/logs/',
-						'limit'   => 'primary',
+						'limit'   => 'developer',
 					)
 				)
 			);
@@ -217,9 +214,11 @@
 <input name="fields[last-name]" type="text" />
 <textarea name="fields[description]"></textarea>
 
-<input name="paypal-payments[inputamount]" value="amount" type="hidden" />
+<input name="paypal-payments[cmd]" value="_xclick" type="hidden" />
+<input name="paypal-payments[notify_url]" value="{$root}/paypal/" type="hidden" />
+<input name="paypal-payments[amount]" value="amount" type="hidden" />
 <input name="paypal-payments[name]" value="first-name,last-name" type="hidden" />
-<input name="paypal-payments[orderinfo]" value="description" type="hidden" />
+<input name="paypal-payments[item_name]" value="description" type="hidden" />
       ';
 			$context['documentation'][] = contentBlueprintsEvents::processDocumentationCode($code);
 			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to PayPal as the <code>txn_id</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
@@ -229,7 +228,7 @@
 		{
 			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
 			
-			$business =  $this->_get_paypal_business();
+			$business = $this->_get_paypal_business();
 			
 			if( ! isset($business))
 			{
@@ -243,20 +242,61 @@
 			# Check if in included filters
 			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
 			
-			# Set the default dataset
-			$data = array(
-				'txn_id' =>       $context['entry']->get('id'),
-				'business' =>  $this->_get_paypal_business()
+			# Allowed fields
+			$allowed_fields = array(
+				'cmd',												'notify_url',
+				'bn',													'amount',
+				'item_name',									'item_number',
+				'quantity',										'undefined_ quantity',
+				'weight',											'weight_unit',
+				'on0',												'on1',
+				'os0',												'os1',
+				'address_override',						'currency_code',
+				'custom',											'handling',
+				'invoice',										'shipping',
+				'shipping2',									'tax',
+				'tax_cart',										'weight_cart',
+				'weight_unit',								'business',
+				'return',											'rm',
+				'cancel_return',							'a1',
+				'p1',													't1',
+				'a2',													'p2',
+				't2',													'a3',
+				'p3',													't3',
+				'src',												'srt',
+				'sra',												'no_note',
+				'custom',											'usr_manage',
+				'cs',													'currency_code',
+				'modify',											'lc',
+				'page_style',									'cbt',
+				'cn',													'cpp_header_image',
+				'cpp_headerback_color',				'cpp_headerborder_color',
+				'cpp_payflow_color',					'image_url',
+				'no_shipping',								'address1',
+				'address2',										'city',
+				'country',										'first_name',
+				'last_name',									'lc',
+				'night_phone_a',							'night_phone_b',
+				'night_phone_c',							'state',
+				'zip',
 			);
 			
-			$mapping = $_POST['st-payments'];
+			# Set the default dataset
+			$data = array(
+				'item_number' =>	$context['entry']->get('id'),
+				'business' =>			$this->_get_paypal_business()
+			);
 			
+			$mapping = $_POST['paypal-payments'];			
 			if ( isset($mapping))
 			{
 				foreach ($mapping as $key => $val)
 				{
-					# Join multiple fields unless it's the `requiredfields` field
-					if (strpos($val, ",") && $key != 'requiredfields') {
+					# Check the field is allowed
+					if( ! in_array($key, $allowed_fields)) continue;
+					# Join multiple fields
+					if (strpos($val, ","))
+					{
 						$values = explode(",", $val);
 						$combo = array();
 						foreach ($values as $val)
@@ -274,14 +314,22 @@
 				$data = array_merge($data, $mapping);
 			}
 			
-			$encoded_data = "";      
-			foreach ($data as $key => $val)
+			# Build up faker HTML output
+			$output = '<html>
+<head>
+<title>Continue to PayPal</title>
+</head>
+<body>
+<form method="post" action="https://www.paypal.com/cgi-bin/webscr">';
+			foreach($data as $field => $value)
 			{
-				$encoded_data[] = urlencode($key)."=".urlencode($val);
+				$output .= '  <input type="hidden" name="' . $field .'" value="' . $value . '"/>';
 			}
-			redirect('https://securetrading.net/authorize/form.cgi?' . implode("&",$encoded_data));
-			return;
+			$output .= '<button type="submit">Continue to PayPal</button>
+</form>
+</body>
+</html>';
+			print($output);
+			exit();
 		}
 	}
-
-/* End of file: extension.driver.php */
