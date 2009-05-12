@@ -24,25 +24,36 @@
 		public function load()
 		{
 			# Verify the data
+			# Set the request paramaeter 
+			$req = 'cmd=_notify-validate'; 
+
+			# Run through the posted array 
+			foreach ($_POST as $key => $value) 
+			{ 
+				# If magic quotes is enabled strip slashes 
+				if (get_magic_quotes_gpc()) 
+				{ 
+					$_POST[$key] = stripslashes($value); 
+					$value = stripslashes($value); 
+				} 
+				$value = urlencode($value); 
+				# Add the value to the request parameter 
+				$req .= "&$key=$value"; 
+			} 
 			
-			$uri = "https://www.sandbox.paypal.com/cgi-bin/webscr?".implode('&', $_POST);
-			
-			if(function_exists('curl_init')){
-				$ch = curl_init();
-				
-				curl_setopt($ch, CURLOPT_URL, $uri);
-				curl_setopt($ch, CURLOPT_HEADER, 0);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-				
-				$tmp = curl_exec($ch);
-				curl_close($ch);			
-			}			
-			else $tmp = @file_get_contents($uri);
-			print_r($tmp);
-			
+			$url = "http://www.sandbox.paypal.com/cgi-bin/webscr"; 
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL,$url);
+			curl_setopt($ch, CURLOPT_FAILONERROR, 1); 
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
+			$result = curl_exec($ch);
+			curl_close($ch);
+						
 			# Check that the POST data contains the `txn_id` value
-			#if ($tmp == 'VERIFIED' && is_array($_POST) &&	! empty($_POST) && isset($_POST['txn_id'])) 
-			return $this->__trigger();			
+			if (strcmp ($result, "VERIFIED") == 0 && is_array($_POST) && ! empty($_POST) && isset($_POST['txn_id'])) return $this->__trigger();
 			return NULL;
 		}
 
@@ -141,8 +152,7 @@
 				"truncccnumber"
 			);
 			
-			$filename = EXTENSIONS . "/paypal_payments/log.txt";
-			print_r($filename);
+			$filename = EXTENSIONS . "/paypal_payments/log." . time() . ".txt";
 			$w = fopen($filename, "w");
 			fwrite($w, serialize($_POST));
 			fclose($w);
