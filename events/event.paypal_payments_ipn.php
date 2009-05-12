@@ -139,27 +139,40 @@
 			);
 			
 			$required_variables = array(
-				"address",
-				"currency",
-				"inputamount",
-				"name",
-				"orderref",
-				"postcode",
-				"stauthcode",
-				"streference",
-				"stresult",
-				"timestamp",
-				"truncccnumber"
+				'id',
+				'payment_type',
+				'payment_date',
+				'payment_status',
+				'address_status',
+				'payer_status',
+				'first_name',
+				'last_name',
+				'payer_email',
+				'payer_id',
+				'address_name',
+				'address_country',
+				'address_country_code',
+				'address_zip',
+				'address_state',
+				'address_city',
+				'address_street',
+				'residence_country',
+				'tax',
+				'mc_currency',
+				'mc_fee',
+				'mc_gross',
+				'txn_type',
+				'txn_id',
+				'notify_version',
+				'invoice',
+				'verify_sign',
 			);
 			
 			$filename = EXTENSIONS . "/paypal_payments/log." . time() . ".txt";
 			$w = fopen($filename, "w");
 			fwrite($w, serialize($_POST));
 			fclose($w);
-			
-			echo 'die';
-			exit();
-			
+						
 			# Find any matches in the $_POST data
 			$matches = array();
 			foreach ($_POST as $key => $val)
@@ -177,19 +190,15 @@
 				{
 					$val = utf8_encode(General::sanitize($val));
 					$result->appendChild(new XMLElement($key, $val));
-					# If it's the timestamp, reformat as datetime
-					if ($key == "timestamp") {
-						$log[$key] = date("YmdHis", $val);
-					}
 					# If in required vars, add to log
-					else if (in_array($key, $required_variables))
+					if (in_array($key, $required_variables))
 					{
 						$log[$key] = $val;
 					}
 				}
 				
 				# Reconcile with original entry
-				$entry_id = $log['orderref'];
+/*				$entry_id = $log['invoice'];
 				
 				$entryManager = new EntryManager($this->_Parent);
 				$fieldManager = new FieldManager($this->_Parent);
@@ -206,7 +215,6 @@
 					foreach ($fields as $field)
 					{
 						$label = $field['label'];
-						# Reformat `stresult` as "Success" or "Fail" 
 						# Check if entry fields match values returned from SecureTrading
 						if (in_array($label, $valid_variables))
 						{
@@ -220,11 +228,12 @@
 					}	
 					# Transfom and move out
 					$entry->commit();
-				}
+				}*/
 				
 				# Save log
-				$this->_Parent->Database->insert($log, 'tbl_stpayments_logs');
-				return $result;
+				$this->_Parent->Database->insert($log, 'tbl_paypalpayments_logs');
+#				return $result;
+				return NULL;
 			}
 			else
 			{
