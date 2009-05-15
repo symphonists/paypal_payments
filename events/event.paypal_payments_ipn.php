@@ -52,7 +52,7 @@
 			$result = curl_exec($ch);
 			curl_close($ch);
 						
-			# Check that the POST data contains the `txn_id` value
+			# Check that we have data and that it’s VERIFIED
 			if (strcmp ($result, "VERIFIED") == 0 && is_array($_POST) && ! empty($_POST) && isset($_POST['txn_id'])) return $this->__trigger();
 			return NULL;
 		}
@@ -105,16 +105,12 @@
 				'first_name',										'guarantee',
 				'instant',											'intl',
 				'invoice',											'item_name',
-				'item_name1',										'item_name2',
 				'item_number',									'last_name',
 				'mc_currency',									'mc_fee',
-				'mc_fee_',											'mc_gross',
-				'mc_gross_',										'mc_handling',
+				'mc_gross',											'mc_handling',
 				'mc_shipping',									'memo',
 				'multi-currency',								'notify_version',
-				'num_cart_items',								'option_name1',
-				'option_name2',									'option_selection1',
-				'option_selection2',						'order',
+				'order',												'verify_sign',
 				'other',												'parent_txn_id',
 				'payer_business_name',					'payer_email',
 				'payer_id',											'payer_status',
@@ -122,24 +118,21 @@
 				'payment_fee',									'payment_gross',
 				'payment_status',								'payment_type',
 				'pending_reason',								'protection_eligibility',
-				'quantity',											'quantity1',
-				'quantity2',										'reason_code',
+				'quantity',											'reason_code',
 				'receiver_email',								'receiver_id',
 				'refund',												'remaining_settle',
 				'residence_country',						'settle_amount',
 				'settle_currency',							'shipping',
-				'shipping1',										'shipping2',
 				'shipping_method',							'tax',
 				'test_ipn',											'transaction_entity',
 				'txn_id',												'txn_type',
 				'unconfirmed',									'unilateral',
 				'unverified',										'upgrade',
 				'verified',											'verify',
-				'verify_sign',
 			);
 			
 			$required_variables = array(
-				'id',
+				'invoice',
 				'payment_type',
 				'payment_date',
 				'payment_status',
@@ -164,41 +157,35 @@
 				'txn_type',
 				'txn_id',
 				'notify_version',
-				'invoice',
 				'verify_sign',
 			);
 			
-			$filename = EXTENSIONS . "/paypal_payments/log." . time() . ".txt";
-			$w = fopen($filename, "w");
-			fwrite($w, serialize($_POST));
-			fclose($w);
-						
 			# Find any matches in the $_POST data
 			$matches = array();
 			foreach ($_POST as $key => $val)
 			{
-				if (in_array($key, $valid_variables)) $matches[$key] = $val;
+				if (in_array($key, $valid_variables)) $matches[$key] = utf8_encode(General::sanitize($val));
 			}
 
 			# Output the matches in XML
-			$result = new XMLElement('paypal-payments-ipn');
+			$output = new XMLElement('paypal-payments-ipn');
 			$log = array();
 
 			if ( ! empty($matches))
 			{
 				foreach ($matches as $key => $val)
 				{
-					$val = utf8_encode(General::sanitize($val));
-					$result->appendChild(new XMLElement($key, $val));
+					$output->appendChild(new XMLElement($key, $val));
 					# If in required vars, add to log
 					if (in_array($key, $required_variables))
 					{
+						if ($key == 'payment_date') $val = strftime('%Y-%m-%d %H:%M:%S', strtotime($val));
 						$log[$key] = $val;
 					}
 				}
 				
 				# Reconcile with original entry
-/*				$entry_id = $log['invoice'];
+				$entry_id = $log['invoice'];
 				
 				$entryManager = new EntryManager($this->_Parent);
 				$fieldManager = new FieldManager($this->_Parent);
@@ -228,12 +215,13 @@
 					}	
 					# Transfom and move out
 					$entry->commit();
-				}*/
+				} else {
+					$output->appendChild(new XMLElement('error', 'No matching entry, could not reconcile payment data.'));
+				}
 				
 				# Save log
 				$this->_Parent->Database->insert($log, 'tbl_paypalpayments_logs');
-#				return $result;
-				return NULL;
+				return $result;
 			}
 			else
 			{

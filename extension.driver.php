@@ -128,13 +128,40 @@
 			$group->appendChild($label);
 			$group->appendChild(new XMLElement('p', 'The merchant email address or account ID of the payment recipient.', array('class' => 'help')));
 			
+			# Country <select>
+/*			$countries = array(
+				'Australia',
+				'United Kingdom',
+				'United States',
+			);
+			$selected_country = $this->_get_country();
+			foreach ($countries as $country)
+			{
+				$selected = ($country == $selected_country) ? TRUE : FALSE;
+				$options[] = array($country, $selected);
+			}
+			
+			$label = Widget::Label();
+			$select = Widget::Select('settings[paypal-payments][country]', $options);
+			$label->setValue('PayPal Country' . $select->generate());
+			$group->appendChild($label);
+			$group->appendChild(new XMLElement('p', 'Country you want to target.', array('class' => 'help'))); */
+			
+			# Sandbox
+			$label = Widget::Label();
+			$input = Widget::Input('settings[paypal-payments][sandbox]', 'yes', 'checkbox');
+			if($this->_Parent->Configuration->get('sandbox', 'paypal-payments') == 'yes') $input->setAttribute('checked', 'checked');
+			$label->setValue($input->generate() . ' Enable testing mode?');
+			$group->appendChild($label);
+			$group->appendChild(new XMLElement('p', 'Directs payments to PayPal’s Sandbox: <code>www.sandbox.paypal...</code>', array('class' => 'help')));
+			
 			$context['wrapper']->appendChild($group);
 		}
-
-  	/*-------------------------------------------------------------------------
-  		Navigation
-  	-------------------------------------------------------------------------*/
-  	
+		
+		/*-------------------------------------------------------------------------
+			Navigation
+		-------------------------------------------------------------------------*/
+		
 		public function fetchNavigation()
 		{
 		  $nav = array();
@@ -160,7 +187,17 @@
 		{
 			return $this->_Parent->Configuration->get('business', 'paypal-payments');
 		}
-
+		
+		private function _sandbox_enabled()
+		{
+			return ($this->_Parent->Configuration->get('sandbox', 'paypal-payments') == 'yes') ? TRUE : FALSE;
+		}
+		
+		private function _get_country()
+		{
+			return $this->_Parent->Configuration->get('country', 'paypal-payments');
+		}
+		
 		public function _count_logs()
 		{
 			return (integer)$this->_Parent->Database->fetchVar('total', 0, "
@@ -344,7 +381,7 @@
 document.write(\'<style type="text/css">button{display:none}</style>\');
 </script>
 <body onload="document.forms.paypal.submit();">
-<form id="paypal" method="post" action="https://www.paypal.com/cgi-bin/webscr">';
+<form id="paypal" method="post" action="https://www.paypal.co.uk/cgi-bin/webscr">';
 			foreach($data as $field => $value)
 			{
 				$output .= '  <input type="hidden" name="' . $field .'" value="' . $value . '"/>' . "\n";
