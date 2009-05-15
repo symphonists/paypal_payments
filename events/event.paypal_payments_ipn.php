@@ -41,7 +41,7 @@
 				$req .= "&$key=$value"; 
 			} 
 			
-			$url = "http://www.sandbox.paypal.com/cgi-bin/webscr"; 
+			$url = $this->_driver->_build_paypay_url();
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL,$url);
 			curl_setopt($ch, CURLOPT_FAILONERROR, 1); 
@@ -69,9 +69,34 @@
 </ol>
 <p>For the event to work you&#8217;ll need to make sure the your IPN URL points to the page that has this event attached.</p>
 <h3>Transaction Logs</h3>
-<p>The transaction logs store the following data from SecureTrading:</p>
+<p>The transaction logs store the following data from PayPal:</p>
 <ul>
-	<li><code>address</code></li>
+	<li><code>invoice</code></li>
+	<li><code>payment_type</code></li>
+	<li><code>payment_date</code></li>
+	<li><code>payment_status</code></li>
+	<li><code>address_status</code></li>
+	<li><code>payer_status</code></li>
+	<li><code>first_name</code></li>
+	<li><code>last_name</code></li>
+	<li><code>payer_email</code></li>
+	<li><code>payer_id</code></li>
+	<li><code>address_name</code></li>
+	<li><code>address_country</code></li>
+	<li><code>address_country_code</code></li>
+	<li><code>address_zip</code></li>
+	<li><code>address_state</code></li>
+	<li><code>address_city</code></li>
+	<li><code>address_street</code></li>
+	<li><code>residence_country</code></li>
+	<li><code>tax</code></li>
+	<li><code>mc_currency</code></li>
+	<li><code>mc_fee</code></li>
+	<li><code>mc_gross</code></li>
+	<li><code>txn_type</code></li>
+	<li><code>txn_id</code></li>
+	<li><code>notify_version</code></li>
+	<li><code>verify_sign</code></li>
 </ul>
 <p>Any other valid PayPal fields are ignored by the logs, though they are still able to be used for reconciling data in the originating entry or in the XML ouput.</p>
 

@@ -129,7 +129,7 @@
 			$group->appendChild(new XMLElement('p', 'The merchant email address or account ID of the payment recipient.', array('class' => 'help')));
 			
 			# Country <select>
-/*			$countries = array(
+			$countries = array(
 				'Australia',
 				'United Kingdom',
 				'United States',
@@ -145,15 +145,15 @@
 			$select = Widget::Select('settings[paypal-payments][country]', $options);
 			$label->setValue('PayPal Country' . $select->generate());
 			$group->appendChild($label);
-			$group->appendChild(new XMLElement('p', 'Country you want to target.', array('class' => 'help'))); */
+			$group->appendChild(new XMLElement('p', 'Country you want to target.', array('class' => 'help')));
 			
 			# Sandbox
 			$label = Widget::Label();
 			$input = Widget::Input('settings[paypal-payments][sandbox]', 'yes', 'checkbox');
 			if($this->_Parent->Configuration->get('sandbox', 'paypal-payments') == 'yes') $input->setAttribute('checked', 'checked');
-			$label->setValue($input->generate() . ' Enable testing mode?');
+			$label->setValue($input->generate() . ' Enable testing mode');
 			$group->appendChild($label);
-			$group->appendChild(new XMLElement('p', 'Directs payments to PayPal’s Sandbox: <code>www.sandbox.paypal...</code>', array('class' => 'help')));
+			$group->appendChild(new XMLElement('p', 'Directs payments to PayPal’s Sandbox: <code>http://www.sandbox.paypal.com/</code>', array('class' => 'help')));
 			
 			$context['wrapper']->appendChild($group);
 		}
@@ -195,7 +195,22 @@
 		
 		private function _get_country()
 		{
-			return $this->_Parent->Configuration->get('country', 'paypal-payments');
+			$country = $this->_Parent->Configuration->get('country', 'paypal-payments');
+			return (isset($country)) ? $country : 'United States';
+		}
+		
+		public function _build_paypay_url()
+		{
+			$countries_tld = array(
+				'Australia'			 => 'com.au',
+				'United Kingdom' => 'co.uk',
+				'United States'	 => 'com',
+			);
+			
+			if ($this->_sandbox_enabled()) $url = 'http://www.sandbox.paypal.com';
+			else $url = 'https://www.paypal.' . $countries_tld[$this->_get_country()];
+			$url .= '/cgi-bin/webscr';
+			return $url;
 		}
 		
 		public function _count_logs()
@@ -371,17 +386,17 @@
 				$data = array_merge($data, $mapping);
 			}
 			
+			# Figure out URL
+			$url = $this->_build_paypal_url();
+			
 			# Build up faker HTML output
-			$output = '<html>
-<head>
-<title>Continue to PayPal</title>
-</head>
+			$output = '<html><head><title>Continue to PayPal</title></head>
 <style type="text/css">button{background:#eee;border:3px #ccc solid;color:#444;display:block;font:normal 200%/1.4 Georgia, Palatino, serif;margin:19% auto 40px;padding:20px 40px;-moz-border-radius:30px;-webkit-border-radius:30px;cursor:pointer;}button:hover{background:#444;color:#fff;border-color:#222;}</style>
 <script type="text/javascript">
 document.write(\'<style type="text/css">button{display:none}</style>\');
 </script>
 <body onload="document.forms.paypal.submit();">
-<form id="paypal" method="post" action="https://www.paypal.co.uk/cgi-bin/webscr">';
+<form id="paypal" method="post" action="'.$url.'">';
 			foreach($data as $field => $value)
 			{
 				$output .= '  <input type="hidden" name="' . $field .'" value="' . $value . '"/>' . "\n";
