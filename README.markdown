@@ -52,9 +52,39 @@ This event is used to deal with data returned by [PayPal’s Instant Payment Not
 
 1. Saves the transaction details to the transaction log.
 2. Reconciles the data return by PayPal with matching fields in the originating entry.
-3. Outputs said data as XML.
 
-For the event to work you'll need to make sure the your IPN URL points to the page that has this event attached.
+A number of default fields are logged in the transaction log. They are:
+
+* `invoice`
+* `payment_type`
+* `payment_date`
+* `payment_status`
+* `address_status`
+* `payer_status`
+* `first_name`
+* `last_name`
+* `payer_email`
+* `payer_id`
+* `address_name`
+* `address_country`
+* `address_country_code`
+* `address_zip`
+* `address_state`
+* `address_city`
+* `address_street`
+* `residence_country`
+* `tax`
+* `mc_currency`
+* `mc_fee`
+* `mc_gross`
+* `txn_type`
+* `txn_id`
+* `notify_version`
+* `verify_sign`
+
+Any of these fields (and most of the other fields returned by the IPN) can be saved back into the original entry by including a field in the matching section with the *exact* same name. 
+
+*Note: for the event to work you'll need to make sure the your IPN URL points to the page that has this event attached.*
 
 ## Notes ##
 
