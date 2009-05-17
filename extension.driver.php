@@ -66,7 +66,6 @@
 					PRIMARY KEY (`id`)
 				)
 			");
-			
 		  return true;
 		}
 		
@@ -233,7 +232,7 @@
 				FROM
 					`tbl_paypalpayments_logs` AS l
 				ORDER BY
-					l.timestamp DESC
+					l.payment_date DESC
 				LIMIT {$start}, {$per_page}
 			");
 		}
@@ -246,7 +245,7 @@
 				FROM
 					`tbl_paypalpayments_logs` AS l
 				ORDER BY
-					l.timestamp DESC
+					l.payment_date DESC
 			");
 		}
 		
@@ -355,8 +354,8 @@
 			
 			# Set the default dataset
 			$data = array(
-				'invoice' =>	$context['entry']->get('id'),
-				'business' =>			$this->_get_paypal_business()
+				'invoice' =>		$context['entry']->get('id'),
+				'business' =>		$this->_get_paypal_business()
 			);
 			
 			$mapping = $_POST['paypal-payments'];			

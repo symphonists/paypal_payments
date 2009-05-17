@@ -2,27 +2,22 @@
 
 	require_once(TOOLKIT . '/class.administrationpage.php');
 	
-	class contentExtensionSecureTrading_PaymentsLogs extends AdministrationPage {
+	class contentExtensionPaypal_paymentsLogs extends AdministrationPage {
 		protected $_errors = array();
 		protected $_fields = array();
 		protected $_action = '';
 		protected $_status = '';
-		protected $_template = 0;
-		protected $_valid = false;
-		protected $_editing = false;
-		protected $_prepared = false;
-		protected $_driver = null;
-		protected $_conditions = array();
+		protected $_driver = NULL;
 		
 		public function __construct(&$parent)
 		{
 			parent::__construct($parent);
-			$this->_driver = $this->_Parent->ExtensionManager->create('securetrading_payments');
+			$this->_driver = $this->_Parent->ExtensionManager->create('paypal_payments');
 		}
 		
 		public function __actionIndex()
 		{
-    	$checked = @array_keys($_POST['items']);
+			$checked = @array_keys($_POST['items']);
 
 			if (is_array($checked) and !empty($checked)) {
 				switch ($_POST['with-selected']) {
@@ -30,23 +25,24 @@
 						foreach ($checked as $log_id) {
 							$this->_Parent->Database->query("
 								DELETE FROM
-									`tbl_stpayments_logs`
+									`tbl_paypalpayments_logs`
 								WHERE
 									`id` = {$log_id}
 							");
 						}
 
-						redirect(URL . '/symphony/extension/securetrading_payments/logs/');
+						redirect(URL . '/symphony/extension/paypal_payments/logs/');
 						break;
 				}
 			}
 		}
 		
 		public function __viewIndex()
-		{	  
+		{		
 			$this->setPageType('table');
-			$this->setTitle('Symphony &ndash; SecureTrading Payments: Transaction Logs');
+			$this->setTitle('Symphony &ndash; PayPal Payment Transactions');
 			$this->appendSubheading('Logs');
+			$this->addStylesheetToHead(URL . '/extensions/paypal_payments/assets/logs.css', 'screen', 81);
 			
 			$per_page = 20;
 			$page = (@(integer)$_GET['pg'] > 1 ? (integer)$_GET['pg'] : 1);
@@ -58,105 +54,99 @@
 								
 			$sectionManager = new SectionManager($this->_Parent);
 			$entryManager = new EntryManager($this->_Parent);
-							
-			$tableHead = array(
+			
+			$th = array(
+				array('Invoice/Entry', 'col'),
 				array('Date', 'col'),
+				array('Payment Type', 'col'),
+				array('Payent Status', 'col'),
 				array('Name', 'col'),
+				array('Email', 'col'),
 				array('Address', 'col'),
-				array('Postcode', 'col'),
-				array('Amount', 'col'),
-				array('ST Reference', 'col'),
-				array('Card No.', 'col'),
-				array('Result', 'col'),
+				array('Currency', 'col'),
+				array('Tax', 'col'),
+				array('Gross', 'col'),
+				array('Fee', 'col'),
+				array('Transaction Type', 'col'),
+				array('Transaction ID', 'col'),
 			);
 						
 			if ( ! is_array($logs) or empty($logs)) {
-				$tableBody = array(
-					Widget::TableRow(array(Widget::TableData(__('None Found.'), 'inactive', null, count($tableHead))))
+				$tb = array(
+					Widget::TableRow(array(Widget::TableData(__('None Found.'), 'inactive', NULL, count($th))))
 				);
 
 			} else {
 				foreach ($logs as $log)
 				{
-				  # Spit out $log_name vars
+					$col = array();
+					# Spit out $log_name vars
 					extract($log, EXTR_PREFIX_ALL, 'log');
-          
-          # Get the entry/section data
-          $entries = $entryManager->fetch($log_orderref, null, null, null, null, null, false, true);
-          $entry = $entries[0];
-          if (isset($entry))
-          {
-            $section_id = $entry->_fields['section_id'];
-  					$section = $sectionManager->fetch($section_id);
-            $column = array_shift($section->fetchFields());
-            $data = $entry->getData($column->get('id'));
-            # Build link to parent section
-            $link = URL . '/symphony/publish/' . $section->get('handle') . '/edit/' . $entry->get('id') . '/';
+					
+					# Get the entry/section data
+					$entries = $entryManager->fetch($log_invoice, NULL, NULL, NULL, NULL, NULL, FALSE, TRUE);
+					$entry = $entries[0];
+					if (isset($entry))
+					{
+						$section_id = $entry->_fields['section_id'];
+						$section = $sectionManager->fetch($section_id);
+						$column = array_shift($section->fetchFields());
+						$data = $entry->getData($column->get('id'));
+						# Build link to parent section
+						$link = URL . '/symphony/publish/' . $section->get('handle') . '/edit/' . $entry->get('id') . '/';
 
-            # Date
-  					$col_date = Widget::TableData(
-  						Widget::Anchor(
-  							DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($log_timestamp)), $link)
-  					);
-          }
-          else
-          {
-            $col_date = Widget::TableData(
-  							DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($log_timestamp))
-  					);
-          }
-					$col_date->appendChild(Widget::Input("items[{$log_id}]", null, 'checkbox'));     
-
-          # Name
-          if ( ! empty($log_name)) $col_name = Widget::TableData(General::sanitize($log_name));
-				  else $col_name = Widget::TableData('None', 'inactive');
-				  
-				  # Address
-          if ( ! empty($log_address)) $col_address = Widget::TableData(General::sanitize($log_address));
-				  else $col_address = Widget::TableData('None', 'inactive');
-				  
-				  # Postcode
-          if ( ! empty($log_postcode)) $col_postcode = Widget::TableData(General::sanitize($log_postcode));
-				  else $col_postcode = Widget::TableData('None', 'inactive');
-
-				  # Amount
-          if ( ! empty($log_inputamount)) $col_amount = Widget::TableData(General::sanitize($log_inputamount));
-				  else $col_amount = Widget::TableData('None', 'inactive');				  
-				  
-				  # Reference
-          if ( ! empty($log_streference)) $col_reference = Widget::TableData(General::sanitize($log_streference));
-				  else $col_reference = Widget::TableData('None', 'inactive');				
-				  
-				  # Card No.
-          if ( ! empty($log_truncccnumber)) $col_card_no = Widget::TableData(General::sanitize($log_truncccnumber));
- 				  else $col_card_no = Widget::TableData('None', 'inactive');
-				  
-				  # Result
-          if ( ! empty($log_stresult))
-          {
-            $result_message = ($log_stresult == 1) ? 'Success' : 'Fail';
-            $col_result = Widget::TableData($result_message);
-          } 
-				  else $col_result = Widget::TableData('None', 'inactive');
-
-					$tableBody[] = Widget::TableRow(
-						array(
-							$col_date,
-							$col_name,
-							$col_address,
-              $col_postcode,
-              $col_amount,
-              $col_reference,
-              $col_card_no,
-              $col_result
-						)
-					);
+						# Date
+						$col[] = Widget::TableData( Widget::Anchor( General::sanitize($log_invoice) ) );
+					} else {
+						$col[] = Widget::TableData( General::sanitize($log_invoice) );
+					}
+					$col[0]->appendChild(Widget::Input("items[{$log_id}]", NULL, 'checkbox'));
+					
+					if ( ! empty($log_payment_date)) $col[] = Widget::TableData( DateTimeObj::get(__SYM_DATETIME_FORMAT__, strtotime($log_payment_date)) );
+					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_payment_type)) $col[] = Widget::TableData(General::sanitize(ucwords($log_payment_type)));
+					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_payment_status)) $col[] = Widget::TableData(General::sanitize($log_payment_status));
+					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_first_name) && ! empty($log_last_name)) $col[] = Widget::TableData(General::sanitize($log_first_name) . " " . General::sanitize($log_last_name));
+					else $col[] = Widget::TableData('None', 'inactive');					
+					
+					if ( ! empty($log_payer_email)) $col[] = Widget::TableData(General::sanitize($log_payer_email));
+					else $col[] = Widget::TableData('None', 'inactive');			
+					
+					if ( ! empty($log_address_street)) $col[] = Widget::TableData(General::sanitize($log_address_street));
+ 					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_mc_currency)) $col[] = Widget::TableData(General::sanitize($log_mc_currency));
+ 					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_tax)) $col[] = Widget::TableData(General::sanitize($log_tax));
+ 					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_mc_gross)) $col[] = Widget::TableData(General::sanitize($log_mc_gross));
+ 					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_mc_fee)) $col[] = Widget::TableData(General::sanitize($log_mc_fee));
+ 					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_txn_type)) $col[] = Widget::TableData(General::sanitize($log_txn_type));
+ 					else $col[] = Widget::TableData('None', 'inactive');
+					
+					if ( ! empty($log_txn_id)) $col[] = Widget::TableData(General::sanitize($log_txn_id));
+ 					else $col[] = Widget::TableData('None', 'inactive');
+					
+					$tr = Widget::TableRow($col);
+					if ($log_payment_status == 'Denied') $tr->setAttribute('class', 'denied');
+					$tb[] = $tr;
 				}
 			}
 
 			$table = Widget::Table(
-				Widget::TableHead($tableHead), null, 
-				Widget::TableBody($tableBody)
+				Widget::TableHead($th), NULL, 
+				Widget::TableBody($tb)
 			);
 			
 			$this->Form->appendChild($table);
@@ -165,8 +155,8 @@
 			$actions->setAttribute('class', 'actions');
 			
 			$options = array(
-				array(null, false, 'With Selected...'),
-				array('delete', false, 'Delete')									
+				array(NULL, FALSE, 'With Selected...'),
+				array('delete', FALSE, 'Delete')									
 			);
 
 			$actions->appendChild(Widget::Select('with-selected', $options));
@@ -231,5 +221,3 @@
 			}
 		}
 	}
-	
-?>
