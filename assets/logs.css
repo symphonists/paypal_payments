@@ -1,2 +1,3 @@
-tr.denied td { background: #fcc; color: #600 }
-tr.selected td { color: #fff }
+tr.denied td { background: #fcc }
+tr.denied td, tr.denied td a { color: #600 }
+tr.selected td, tr.selected td a { color: #fff }
