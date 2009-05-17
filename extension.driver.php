@@ -12,8 +12,8 @@
 		public function about()
 		{
 			return array('name' => 'PayPal Payments',
-						 'version' => '0.1',
-						 'release-date' => '2009-05-04',
+						 'version' => '1.0',
+						 'release-date' => '2009-05-17',
 						 'author' => array('name' => 'Max Wheeler',
 										   'website' => 'http://makenosound.com/',
 										   'email' => 'max@makenosound.com'),
@@ -267,15 +267,15 @@
   	
   	public function add_filter_to_event_editor(&$context)
   	{
-		  $context['options'][] = array('paypal-payments', @in_array('paypal-payments', $context['selected']) ,'PayPal Payments: Submit');
+		  $context['options'][] = array('paypal-payments', @in_array('paypal-payments', $context['selected']) ,'PayPal Payments: Reroute to PayPal');
 		}
 		
 		public function add_filter_documentation_to_event($context)
 		{
       if ( ! in_array('paypal-payments', $context['selected'])) return;
 
-      $context['documentation'][] = new XMLElement('h3', 'PayPal Payments');
-			$context['documentation'][] = new XMLElement('p', 'Blah:');
+      $context['documentation'][] = new XMLElement('h3', 'PayPal Payments: Reroute to PayPal');
+			$context['documentation'][] = new XMLElement('p', 'You can pass data to PayPal&#8217;s server by mapping fields to most of the variables/fields listed in <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables">Website Payments Standard documentation</a>. The example below shows how you would map <code>amount</code>, <code>first-name</code>/<code>last-name</code> and <code>description</code> to their PayPal equivalents:');
 			$code = '<input name="fields[amount]" type="text" />
 <input name="fields[first-name]" type="text" />
 <input name="fields[last-name]" type="text" />
@@ -288,7 +288,7 @@
 <input name="paypal-payments[item_name]" value="description" type="hidden" />
       ';
 			$context['documentation'][] = contentBlueprintsEvents::processDocumentationCode($code);
-			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to PayPal as the <code>item_id</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
+			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to PayPal as the <code>invoice</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
 		}
 		
 		public function check_paypal_preferences(&$context)
@@ -302,7 +302,7 @@
 				$context['messages'][] = array(
 					'paypal-payments',
 					FALSE,
-					'You need to set the your business id/email in the preferences.'
+					'You need to set the your business ID/email in the preferences.'
 				);
 				return;
 			}
