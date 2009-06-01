@@ -73,6 +73,11 @@
 		{
 			return array(
 				array(
+					'page' => '/system/preferences/',
+					'delegate' => 'Save',
+					'callback' => 'save_preferences'
+				),
+				array(
 					'page'		=> '/blueprints/events/edit/',
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'add_filter_to_event_editor'
@@ -156,6 +161,15 @@
 			
 			$context['wrapper']->appendChild($group);
 		}
+		
+		public function save_preferences($context)
+		{
+			if( ! isset($context['settings']['paypal-payments']['sandbox']))
+			{
+				$context['settings']['paypal-payments']['sandbox'] = 'no';
+			}
+		}
+		
 		
 		/*-------------------------------------------------------------------------
 			Navigation
@@ -386,7 +400,7 @@
 			}
 			
 			# Figure out URL
-			$url = $this->_build_paypal_url();
+			$url = $this->_build_paypay_url();
 			
 			# Build up faker HTML output
 			$output = '<html><head><title>Continue to PayPal</title></head>
