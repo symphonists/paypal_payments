@@ -24,7 +24,7 @@
 		public function uninstall()
 		{
 			# Remove tables
-			$this->_Parent->Database->query("DROP TABLE `tbl_paypalpayments_logs`");
+			Symphony::Database()->query("DROP TABLE `tbl_paypalpayments_logs`");
 			
 			# Remove preferences
 			$this->_Parent->Configuration->remove('paypal-payments');
@@ -34,7 +34,7 @@
 		public function install()
 		{
 		  # Create tables
-		  $this->_Parent->Database->query("
+		  Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_paypalpayments_logs` (
 					`id` int(11) unsigned NOT NULL auto_increment,					
 					`payment_type` varchar(255) NOT NULL,
@@ -74,6 +74,11 @@
 			return array(
 				array(
 					'page' => '/system/preferences/',
+					'delegate' => 'Save',
+					'callback' => 'save_preferences'
+				),
+				array(
+					'page' => '/system/preferences/success/',
 					'delegate' => 'Save',
 					'callback' => 'save_preferences'
 				),
@@ -228,7 +233,7 @@
 		
 		public function _count_logs()
 		{
-			return (integer)$this->_Parent->Database->fetchVar('total', 0, "
+			return (integer)Symphony::Database()->fetchVar('total', 0, "
 				SELECT
 					COUNT(l.id) AS `total`
 				FROM
@@ -240,7 +245,7 @@
 		{
 			$start = ($page - 1) * $per_page;
 			
-			return $this->_Parent->Database->fetch("
+			return Symphony::Database()->fetch("
 				SELECT
 					l.*
 				FROM
@@ -253,7 +258,7 @@
 		
 		public function _get_logs()
 		{
-			return $this->_Parent->Database->fetch("
+			return Symphony::Database()->fetch("
 				SELECT
 					l.*
 				FROM
@@ -264,7 +269,7 @@
 		}
 		
 		public function _get_log($log_id) {
-			return $this->_Parent->Database->fetchRow(0, "
+			return Symphony::Database()->fetchRow(0, "
 				SELECT
 					l.*
 				FROM

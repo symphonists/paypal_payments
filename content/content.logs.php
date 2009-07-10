@@ -23,7 +23,7 @@
 				switch ($_POST['with-selected']) {
 					case 'delete':
 						foreach ($checked as $log_id) {
-							$this->_Parent->Database->query("
+							Symphony::Database()->query("
 								DELETE FROM
 									`tbl_paypalpayments_logs`
 								WHERE
