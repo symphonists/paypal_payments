@@ -13,11 +13,11 @@
 		{
 			return array('name' => 'PayPal Payments',
 						 'version' => '1.0',
-						 'release-date' => '2009-05-17',
+						 'release-date' => '2009-07-10',
 						 'author' => array('name' => 'Max Wheeler',
 										   'website' => 'http://makenosound.com/',
 										   'email' => 'max@makenosound.com'),
- 						 'description' => 'Allows you to process and track PayPal payments'
+ 						 'description' => 'Allows you to process and track Website Payments Standard transactions from PayPal.'
 				 		);
 		}
 		

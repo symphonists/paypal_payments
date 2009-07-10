@@ -23,12 +23,15 @@
 		
 		public function load()
 		{
+			# Ensure we're receiving IPN data by checking for `verify_sign`
+			if ( ! isset($_POST['verify_sign'])) return NULL;
+			
 			# Verify the data
 			# Set the request paramaeter 
 			$req = 'cmd=_notify-validate'; 
 
 			# Run through the posted array 
-			foreach ($_POST as $key => $value) 
+			foreach ($_POST as $key => $value)
 			{ 
 				# If magic quotes is enabled strip slashes 
 				if (get_magic_quotes_gpc()) 
@@ -53,7 +56,7 @@
 			curl_close($ch);
 						
 			# Check that we have data and that it’s VERIFIED
-			if (strcmp ($result, "VERIFIED") == 0 && is_array($_POST) && ! empty($_POST) && isset($_POST['txn_id'])) return $this->__trigger();
+			if (strcmp ($result, "VERIFIED") == 0 && is_array($_POST) && ! empty($_POST)) return $this->__trigger();
 			return NULL;
 		}
 
