@@ -96,7 +96,7 @@
 						$link = URL . '/symphony/publish/' . $section->get('handle') . '/edit/' . $entry->get('id') . '/';
 
 						# Date
-						$col[] = Widget::TableData( Widget::Anchor( General::sanitize($log_invoice) ) );
+						$col[] = Widget::TableData( Widget::Anchor( General::sanitize($log_invoice), $link ) );
 					} else {
 						$col[] = Widget::TableData( General::sanitize($log_invoice) );
 					}
