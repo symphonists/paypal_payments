@@ -59,7 +59,7 @@
 				array('Invoice/Entry', 'col'),
 				array('Date', 'col'),
 				array('Payment Type', 'col'),
-				array('Payent Status', 'col'),
+				array('Payment Status', 'col'),
 				array('Name', 'col'),
 				array('Email', 'col'),
 				array('Address', 'col'),
