@@ -1,8 +1,8 @@
 # PayPal Payments #
  
-Version: 1.0  
+Version: 1.0.1  
 Author: [Max Wheeler](http://makenosound.com)  
-Build Date: 2009-07-10  
+Build Date: 2009-09-17  
 Compatibility: Symphony 2.0.4+
 
 The *PayPal Payments* extension allows you to reroute standard Symphony events

@@ -10,8 +10,8 @@
 						 'author' => array('name' => 'Max Wheeler',
 											 'website' => 'http://www.icelab.com.au',
 											 'email' => 'max@icelab.com.au'),
-						 'version' => '0.1',
-						 'release-date' => '2009-05-04',						 
+						 'version' => '0.2',
+						 'release-date' => '2009-09-17',
 					);						 
 		}
 		
@@ -230,7 +230,7 @@
 					foreach ($fields as $field)
 					{
 						$label = $field['label'];
-						# Check if entry fields match values returned from SecureTrading
+						# Check if entry fields match values returned from PayPal
 						if (in_array($label, $valid_variables))
 						{
 							$value = $log[$label];
