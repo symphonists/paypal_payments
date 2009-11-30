@@ -82,7 +82,7 @@ A number of default fields are logged in the transaction log. They are:
 * `notify_version`
 * `verify_sign`
 
-Any of these fields (and most of the other fields returned by the IPN) can be saved back into the original entry by including a field in the matching section with the *exact* same name. 
+Any of these fields (and most of the other fields returned by the IPN) can be saved back into the original entry by including a field in the matching section with the *exact* same name. Your IPN data *must* include an `invoice` field that matches an entry ID in your site otherwise the data will be discarded (this means when testing via the PayPal sandbox you'll have to manually set the `invoice` value).
 
 *Note: for the event to work you'll need to make sure the your IPN URL points to the page that has this event attached.*
 
