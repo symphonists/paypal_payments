@@ -1,8 +1,8 @@
 # PayPal Payments #
  
-Version: 1.0.1  
+Version: 1.0.2  
 Author: [Max Wheeler](http://makenosound.com)  
-Build Date: 2009-09-17  
+Build Date: 2010-09-28  
 Compatibility: Symphony 2.0.4+
 
 The *PayPal Payments* extension allows you to reroute standard Symphony events
@@ -92,3 +92,9 @@ As the information needs to be submitted to PayPal via POST and that POST data c
 
 [1]: https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables
 [2]: https://cms.paypal.com/cms_content/US/en_US/files/developer/IPNGuide.pdf
+
+## Changelog ##
+
+**1.0.2**
+
+* [designermonkey](http://github.com/designermonkey): Fixed error on events save

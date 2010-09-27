@@ -12,8 +12,8 @@
 		public function about()
 		{
 			return array('name' => 'PayPal Payments',
-						 'version' => '1.0.1',
-						 'release-date' => '2009-09-17',
+						 'version' => '1.0.2',
+						 'release-date' => '2010-09-28',
 						 'author' => array('name' => 'Max Wheeler',
 										   'website' => 'http://makenosound.com/',
 										   'email' => 'max@makenosound.com'),
