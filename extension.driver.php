@@ -5,7 +5,7 @@
   require_once(TOOLKIT . '/class.fieldmanager.php');
 
 	Class extension_paypal_payments extends Extension
-	{	  
+	{
 	/*-------------------------------------------------------------------------
 		Extension definition
 	-------------------------------------------------------------------------*/
@@ -20,23 +20,23 @@
  						 'description' => 'Allows you to process and track Website Payments Standard transactions from PayPal.'
 				 		);
 		}
-		
+
 		public function uninstall()
 		{
 			# Remove tables
 			Symphony::Database()->query("DROP TABLE `tbl_paypalpayments_logs`");
-			
+
 			# Remove preferences
 			$this->_Parent->Configuration->remove('paypal-payments');
 			$this->_Parent->saveConfig();
 		}
-		
+
 		public function install()
 		{
 		  # Create tables
 		  Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_paypalpayments_logs` (
-					`id` int(11) unsigned NOT NULL auto_increment,					
+					`id` int(11) unsigned NOT NULL auto_increment,
 					`payment_type` varchar(255) NOT NULL,
 					`payment_date` datetime NOT NULL,
 					`payment_status` varchar(255) NOT NULL,
@@ -68,7 +68,7 @@
 			");
 		  return true;
 		}
-		
+
 		public function getSubscribedDelegates()
 		{
 			return array(
@@ -86,7 +86,7 @@
 					'page'		=> '/blueprints/events/edit/',
 					'delegate'	=> 'AppendEventFilter',
 					'callback'	=> 'add_filter_to_event_editor'
-				),				
+				),
 				array(
 					'page'		=> '/blueprints/events/new/',
 					'delegate'	=> 'AppendEventFilter',
@@ -96,7 +96,7 @@
 					'page' => '/blueprints/events/new/',
 					'delegate' => 'AppendEventFilterDocumentation',
 					'callback' => 'add_filter_documentation_to_event'
-				),					
+				),
 				array(
 					'page' => '/blueprints/events/edit/',
 					'delegate' => 'AppendEventFilterDocumentation',
@@ -130,13 +130,13 @@
 			$group = new XMLElement('fieldset');
 			$group->setAttribute('class', 'settings');
 			$group->appendChild(new XMLElement('legend', 'PayPal Payments'));
-			
+
 			# Add Merchant Email field
 			$label = Widget::Label('Merchant Email/Account ID');
 			$label->appendChild(Widget::Input('settings[paypal-payments][business]', General::Sanitize($this->_get_paypal_business())));
 			$group->appendChild($label);
 			$group->appendChild(new XMLElement('p', 'The merchant email address or account ID of the payment recipient.', array('class' => 'help')));
-			
+
 			# Country <select>
 			$countries = array(
 				'Australia',
@@ -149,13 +149,13 @@
 				$selected = ($country == $selected_country) ? TRUE : FALSE;
 				$options[] = array($country, $selected);
 			}
-			
+
 			$label = Widget::Label();
 			$select = Widget::Select('settings[paypal-payments][country]', $options);
 			$label->setValue('PayPal Country' . $select->generate());
 			$group->appendChild($label);
 			$group->appendChild(new XMLElement('p', 'Country you want to target.', array('class' => 'help')));
-			
+
 			# Sandbox
 			$label = Widget::Label();
 			$input = Widget::Input('settings[paypal-payments][sandbox]', 'yes', 'checkbox');
@@ -163,10 +163,10 @@
 			$label->setValue($input->generate() . ' Enable testing mode');
 			$group->appendChild($label);
 			$group->appendChild(new XMLElement('p', 'Directs payments to PayPal’s Sandbox: <code>http://www.sandbox.paypal.com/</code>', array('class' => 'help')));
-			
+
 			$context['wrapper']->appendChild($group);
 		}
-		
+
 		public function save_preferences($context)
 		{
 			if( ! isset($context['settings']['paypal-payments']['sandbox']))
@@ -174,12 +174,12 @@
 				$context['settings']['paypal-payments']['sandbox'] = 'no';
 			}
 		}
-		
-		
+
+
 		/*-------------------------------------------------------------------------
 			Navigation
 		-------------------------------------------------------------------------*/
-		
+
 		public function fetchNavigation()
 		{
 		  $nav = array();
@@ -196,27 +196,27 @@
 			);
       return $nav;
 		}
-		
+
   	/*-------------------------------------------------------------------------
   		Helpers
   	-------------------------------------------------------------------------*/
-		
+
 		private function _get_paypal_business()
 		{
 			return $this->_Parent->Configuration->get('business', 'paypal-payments');
 		}
-		
+
 		private function _sandbox_enabled()
 		{
 			return ($this->_Parent->Configuration->get('sandbox', 'paypal-payments') == 'yes') ? TRUE : FALSE;
 		}
-		
+
 		private function _get_country()
 		{
 			$country = $this->_Parent->Configuration->get('country', 'paypal-payments');
 			return (isset($country)) ? $country : 'United States';
 		}
-		
+
 		public function _build_paypay_url()
 		{
 			$countries_tld = array(
@@ -224,13 +224,13 @@
 				'United Kingdom' => 'co.uk',
 				'United States'	 => 'com',
 			);
-			
+
 			if ($this->_sandbox_enabled()) $url = 'http://www.sandbox.paypal.com';
 			else $url = 'https://www.paypal.' . $countries_tld[$this->_get_country()];
 			$url .= '/cgi-bin/webscr';
 			return $url;
 		}
-		
+
 		public function _count_logs()
 		{
 			return (integer)Symphony::Database()->fetchVar('total', 0, "
@@ -240,11 +240,11 @@
 					`tbl_paypalpayments_logs` AS l
 			");
 		}
-		
+
 		public function _get_logs_by_page($page, $per_page)
 		{
 			$start = ($page - 1) * $per_page;
-			
+
 			return Symphony::Database()->fetch("
 				SELECT
 					l.*
@@ -255,7 +255,7 @@
 				LIMIT {$start}, {$per_page}
 			");
 		}
-		
+
 		public function _get_logs()
 		{
 			return Symphony::Database()->fetch("
@@ -267,7 +267,7 @@
 					l.payment_date DESC
 			");
 		}
-		
+
 		public function _get_log($log_id) {
 			return Symphony::Database()->fetchRow(0, "
 				SELECT
@@ -279,19 +279,19 @@
 				LIMIT 1
 			");
 		}
-  	
+
   	/*-------------------------------------------------------------------------
   		Filters
-  	-------------------------------------------------------------------------*/	
-  	
+  	-------------------------------------------------------------------------*/
+
   	public function add_filter_to_event_editor(&$context)
   	{
 		  $context['options'][] = array('paypal-payments', @in_array('paypal-payments', $context['selected']) ,'PayPal Payments: Reroute to PayPal');
 		}
-		
+
 		public function add_filter_documentation_to_event($context)
 		{
-      if ( ! in_array('paypal-payments', $context['selected'])) return;
+      if ( $context['selected'] && !in_array('paypal-payments', $context['selected'])) return;
 
       $context['documentation'][] = new XMLElement('h3', 'PayPal Payments: Reroute to PayPal');
 			$context['documentation'][] = new XMLElement('p', 'You can pass data to PayPal&#8217;s server by mapping fields to most of the variables/fields listed in <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables">Website Payments Standard documentation</a>. The example below shows how you would map <code>amount</code>, <code>first-name</code>/<code>last-name</code> and <code>description</code> to their PayPal equivalents:');
@@ -309,13 +309,13 @@
 			$context['documentation'][] = contentBlueprintsEvents::processDocumentationCode($code);
 			$context['documentation'][] = new XMLElement('p', 'Note that the <code>id</code> of the newly created entry will be automatically passed to PayPal as the <code>invoice</code>. Multiple fields can be mapped by separating them with commas, they will be joined with a space. All field mappings are optional.');
 		}
-		
+
 		public function check_paypal_preferences(&$context)
-		{	
+		{
 			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
-			
+
 			$business = $this->_get_paypal_business();
-			
+
 			if( ! isset($business))
 			{
 				$context['messages'][] = array(
@@ -326,12 +326,12 @@
 				return;
 			}
 		}
-		
+
 		public function process_event_data($context)
 		{
 			# Check if in included filters
 			if ( ! in_array('paypal-payments', $context['event']->eParamFILTERS)) return;
-			
+
 			# Allowed fields
 			$allowed_fields = array(
 				'cmd',												'notify_url',
@@ -370,14 +370,14 @@
 				'night_phone_c',							'state',
 				'zip',
 			);
-			
+
 			# Set the default dataset
 			$data = array(
 				'invoice' =>		$context['entry']->get('id'),
 				'business' =>		$this->_get_paypal_business()
 			);
-			
-			$mapping = $_POST['paypal-payments'];			
+
+			$mapping = $_POST['paypal-payments'];
 			if ( isset($mapping))
 			{
 				foreach ($mapping as $key => $val)
@@ -403,10 +403,10 @@
 				}
 				$data = array_merge($data, $mapping);
 			}
-			
+
 			# Figure out URL
 			$url = $this->_build_paypay_url();
-			
+
 			# Build up faker HTML output
 			$output = '<html><head><title>Continue to PayPal</title></head>
 <style type="text/css">button{background:#eee;border:3px #ccc solid;color:#444;display:block;font:normal 200%/1.4 Georgia, Palatino, serif;margin:19% auto 40px;padding:20px 40px;-moz-border-radius:30px;-webkit-border-radius:30px;cursor:pointer;}button:hover{background:#444;color:#fff;border-color:#222;}</style>
