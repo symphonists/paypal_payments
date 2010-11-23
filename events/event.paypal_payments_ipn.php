@@ -10,8 +10,8 @@
 						 'author' => array('name' => 'Max Wheeler',
 											 'website' => 'http://www.icelab.com.au',
 											 'email' => 'max@icelab.com.au'),
-						 'version' => '0.2',
-						 'release-date' => '2009-09-17',
+						 'version' => '1.0.3',
+						 'release-date' => '2010-11-24',
 					);						 
 		}
 		
@@ -41,10 +41,10 @@
 				} 
 				$value = urlencode($value); 
 				# Add the value to the request parameter 
-				$req .= "&$key=$value"; 
+				$req .= "&$key=$value";
 			} 
 			
-			$url = $this->_driver->_build_paypay_url();
+			$url = $this->_driver->_build_paypay_url(true);
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL,$url);
 			curl_setopt($ch, CURLOPT_FAILONERROR, 1); 

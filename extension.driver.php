@@ -12,8 +12,8 @@
 		public function about()
 		{
 			return array('name' => 'PayPal Payments',
-						 'version' => '1.0.2',
-						 'release-date' => '2010-09-28',
+						 'version' => '1.0.3',
+						 'release-date' => '2010-11-24',
 						 'author' => array('name' => 'Max Wheeler',
 										   'website' => 'http://makenosound.com/',
 										   'email' => 'max@makenosound.com'),
@@ -217,7 +217,7 @@
 			return (isset($country)) ? $country : 'United States';
 		}
 
-		public function _build_paypay_url()
+		public function _build_paypay_url($default = false)
 		{
 			$countries_tld = array(
 				'Australia'			 => 'com.au',
@@ -225,8 +225,13 @@
 				'United States'	 => 'com',
 			);
 
-			if ($this->_sandbox_enabled()) $url = 'http://www.sandbox.paypal.com';
-			else $url = 'https://www.paypal.' . $countries_tld[$this->_get_country()];
+			if ($this->_sandbox_enabled()) {
+				$url = 'http://www.sandbox.paypal.com';
+			} else if ($default == true) {
+				$url = 'https://www.paypal.' . $countries_tld['United States'];
+			} else {
+				$url = 'https://www.paypal.' . $countries_tld[$this->_get_country()];
+			}
 			$url .= '/cgi-bin/webscr';
 			return $url;
 		}
