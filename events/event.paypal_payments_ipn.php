@@ -10,8 +10,8 @@
 						 'author' => array('name' => 'Max Wheeler',
 											 'website' => 'http://www.icelab.com.au',
 											 'email' => 'max@icelab.com.au'),
-						 'version' => '1.0.3',
-						 'release-date' => '2010-11-24',
+						 'version' => '1.0.4',
+						 'release-date' => '2011-05-01',
 					);						 
 		}
 		

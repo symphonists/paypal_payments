@@ -1,9 +1,9 @@
 # PayPal Payments #
  
-Version: 1.0.3  
+Version: 1.0.4  
 Author: [Max Wheeler](http://makenosound.com)  
-Build Date: 2010-11-24  
-Compatibility: Symphony 2.0.4+
+Build Date: 2011-05-01  
+Compatibility: Symphony 2.2+
 
 The *PayPal Payments* extension allows you to reroute standard Symphony events
 to PayPal Standard Payments.
@@ -82,9 +82,92 @@ A number of default fields are logged in the transaction log. They are:
 * `notify_version`
 * `verify_sign`
 
-Any of these fields (and most of the other fields returned by the IPN) can be saved back into the original entry by including a field in the matching section with the *exact* same name. Your IPN data *must* include an `invoice` field that matches an entry ID in your site otherwise the data will be discarded (this means when testing via the PayPal sandbox you'll have to manually set the `invoice` value).
+Any of these fields (and most of the other fields returned by the IPN — see the valid variables list below) can be saved back into the original entry by including a field in the matching section with the *exact* same name. Your IPN data *must* include an `invoice` field that matches an entry ID in your site otherwise the data will be discarded (this means when testing via the PayPal sandbox you'll have to manually set the `invoice` value).
 
 *Note: for the event to work you'll need to make sure the your IPN URL points to the page that has this event attached.*
+
+### Valid Variables ###
+
+* `address`
+* `address_city`
+* `address_country`
+* `address_country_code`
+* `address_name`
+* `address_state`
+* `address_status`
+* `address_street`
+* `address_zip`
+* `adjustment_reversal`
+* `authorization`
+* `auth_amount`
+* `auth_exp`
+* `auth_id`
+* `auth_status`
+* `business`
+* `buyer-complaint`
+* `chargeback`
+* `chargeback_reimbursement`
+* `chargeback_settlement`
+* `charset`
+* `confirmed`
+* `contact_phone`
+* `custom`
+* `echeck`
+* `exchange_rate`
+* `first_name`
+* `guarantee`
+* `instant`
+* `intl`
+* `invoice`
+* `item_name`
+* `item_number`
+* `last_name`
+* `mc_currency`
+* `mc_fee`
+* `mc_gross`
+* `mc_handling`
+* `mc_shipping`
+* `memo`
+* `multi-currency`
+* `notify_version`
+* `order`
+* `verify_sign`
+* `other`
+* `parent_txn_id`
+* `payer_business_name`
+* `payer_email`
+* `payer_id`
+* `payer_status`
+* `paymentreview`
+* `payment_date`
+* `payment_fee`
+* `payment_gross`
+* `payment_status`
+* `payment_type`
+* `pending_reason`
+* `protection_eligibility`
+* `quantity`
+* `reason_code`
+* `receiver_email`
+* `receiver_id`
+* `refund`
+* `remaining_settle`
+* `residence_country`
+* `settle_amount`
+* `settle_currency`
+* `shipping`
+* `shipping_method`
+* `tax`
+* `test_ipn`
+* `transaction_entity`
+* `txn_id`
+* `txn_type`
+* `unconfirmed`
+* `unilateral`
+* `unverified`
+* `upgrade`
+* `verified`
+* `verify`
 
 ## Notes ##
 
@@ -94,6 +177,15 @@ As the information needs to be submitted to PayPal via POST and that POST data c
 [2]: https://cms.paypal.com/cms_content/US/en_US/files/developer/IPNGuide.pdf
 
 ## Changelog ##
+
+**1.0.4**
+
+Symphony 2.2 compatibility:
+
+* Using new accessors
+* Fixed XML output from IPN event
+* Fix #1: IPN calls getting logged multiple times
+* Force HTML headers for the auto-submitting form
 
 **1.0.3**
 
