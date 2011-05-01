@@ -18,7 +18,7 @@
 		public function __construct(&$parent)
 		{
 			parent::__construct($parent);
-			$this->_driver = $this->_Parent->ExtensionManager->create('paypal_payments');
+			$this->_driver = Symphony::Engine()->ExtensionManager->create('paypal_payments');
 		}
 		
 		public function load()
@@ -54,7 +54,7 @@
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
 			$result = curl_exec($ch);
 			curl_close($ch);
-						
+			
 			# Check that we have data and that it’s VERIFIED
 			if (strcmp ($result, "VERIFIED") == 0 && is_array($_POST) && ! empty($_POST)) return $this->__trigger();
 			return NULL;
@@ -215,15 +215,15 @@
 				# Reconcile with original entry
 				$entry_id = $log['invoice'];
 				
-				$entryManager = new EntryManager($this->_Parent);
-				$fieldManager = new FieldManager($this->_Parent);
+				$entryManager = new EntryManager(Symphony::Engine());
+				$fieldManager = new FieldManager(Symphony::Engine());
 				
 				$entries = $entryManager->fetch($entry_id, null, null, null, null, null, false, true);
 				if (count($entries) > 0)
 				{
 					$entry = $entries[0];
-					$section_id = $entry->_fields['section_id'];
-					$fields = $this->_Parent->Database->fetch("
+					$section_id = $entry->get('section_id');
+					$fields = Symphony::Database()->fetch("
 						SELECT `id`, `label` FROM `tbl_fields` WHERE `parent_section` = '$section_id'
 					");
 			
@@ -243,17 +243,22 @@
 					}	
 					# Transfom and move out
 					$entry->commit();
-				} else {
-					$output->appendChild(new XMLElement('error', 'No matching entry, could not reconcile payment data.'));
+					$output->setAttribute('result', 'success');
+					$output->appendChild(new XMLElement('message', 'PayPal data logged and reconciled.'));
+				} else {  
+					$output->setAttribute('result', 'error');
+					$output->appendChild(new XMLElement('message', 'No matching entry, could not reconcile payment data.'));
 				}
 				
-				# Save log
-				$this->_Parent->Database->insert($log, 'tbl_paypalpayments_logs');
-				return $result;
-			}
-			else
-			{
-				return NULL;
-			}
+				# Save log, delete previous IPN logs with same invoice number
+				Symphony::Database()->query("
+					DELETE FROM
+						`tbl_paypalpayments_logs`
+					WHERE
+						`invoice` = {$entry_id}
+				");
+				Symphony::Database()->insert($log, 'tbl_paypalpayments_logs');
+			}  
+			return $output;
 		}
 	}

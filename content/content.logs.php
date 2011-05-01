@@ -4,7 +4,6 @@
 	
 	class contentExtensionPaypal_paymentsLogs extends AdministrationPage {
 		protected $_errors = array();
-		protected $_fields = array();
 		protected $_action = '';
 		protected $_status = '';
 		protected $_driver = NULL;
@@ -12,7 +11,7 @@
 		public function __construct(&$parent)
 		{
 			parent::__construct($parent);
-			$this->_driver = $this->_Parent->ExtensionManager->create('paypal_payments');
+			$this->_driver = Administration::instance()->ExtensionManager->create('paypal_payments');
 		}
 		
 		public function __actionIndex()
@@ -52,8 +51,8 @@
 			$total = $this->_driver->_count_logs();
 			$pages = ceil($total / $per_page);
 								
-			$sectionManager = new SectionManager($this->_Parent);
-			$entryManager = new EntryManager($this->_Parent);
+			$sectionManager = new SectionManager(Administration::instance());
+			$entryManager = new EntryManager(Administration::instance());
 			
 			$th = array(
 				array('Invoice/Entry', 'col'),
@@ -88,7 +87,7 @@
 					$entry = $entries[0];
 					if (isset($entry))
 					{
-						$section_id = $entry->_fields['section_id'];
+						$section_id = $entry->get('section_id');
 						$section = $sectionManager->fetch($section_id);
 						$column = array_shift($section->fetchFields());
 						$data = $entry->getData($column->get('id'));
@@ -115,7 +114,7 @@
 					else $col[] = Widget::TableData('None', 'inactive');					
 					
 					if ( ! empty($log_payer_email)) $col[] = Widget::TableData(General::sanitize($log_payer_email));
-					else $col[] = Widget::TableData('None', 'inactive');			
+					else $col[] = Widget::TableData('None', 'inactive');
 					
 					if ( ! empty($log_address_street)) $col[] = Widget::TableData(General::sanitize($log_address_street));
  					else $col[] = Widget::TableData('None', 'inactive');
@@ -146,7 +145,7 @@
 
 			$table = Widget::Table(
 				Widget::TableHead($th), NULL, 
-				Widget::TableBody($tb)
+				Widget::TableBody($tb), 'selectable'
 			);
 			
 			$this->Form->appendChild($table);
@@ -173,7 +172,7 @@
 				$li = new XMLElement('li');				
 				if ($page > 1) {
 					$li->appendChild(
-						Widget::Anchor('First', $this->_Parent->getCurrentPageURL() . '?pg=1')
+						Widget::Anchor('First', Administration::instance()->getCurrentPageURL() . '?pg=1')
 					);					
 				} else {
 					$li->setValue('First');
@@ -184,7 +183,7 @@
 				$li = new XMLElement('li');				
 				if ($page > 1) {
 					$li->appendChild(
-						Widget::Anchor('&larr; Previous', $this->_Parent->getCurrentPageURL(). '?pg=' . ($page - 1))
+						Widget::Anchor('&larr; Previous', Administration::instance()->getCurrentPageURL(). '?pg=' . ($page - 1))
 					);					
 				} else {
 					$li->setValue('&larr; Previous');
@@ -200,7 +199,7 @@
 				$li = new XMLElement('li');				
 				if ($page < $pages) {
 					$li->appendChild(
-						Widget::Anchor('Next &rarr;', $this->_Parent->getCurrentPageURL(). '?pg=' . ($page + 1))
+						Widget::Anchor('Next &rarr;', Administration::instance()->getCurrentPageURL(). '?pg=' . ($page + 1))
 					);					
 				} else {
 					$li->setValue('Next &rarr;');
@@ -211,7 +210,7 @@
 				$li = new XMLElement('li');				
 				if ($page < $pages) {
 					$li->appendChild(
-						Widget::Anchor('Last', $this->_Parent->getCurrentPageURL(). '?pg=' . $pages)
+						Widget::Anchor('Last', Administration::instance()->getCurrentPageURL(). '?pg=' . $pages)
 					);					
 				} else {
 					$li->setValue('Last');

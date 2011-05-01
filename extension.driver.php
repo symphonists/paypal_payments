@@ -27,8 +27,8 @@
 			Symphony::Database()->query("DROP TABLE `tbl_paypalpayments_logs`");
 
 			# Remove preferences
-			$this->_Parent->Configuration->remove('paypal-payments');
-			$this->_Parent->saveConfig();
+			Symphony::Configuration()->remove('paypal-payments');
+			Administration::instance()->saveConfig();
 		}
 
 		public function install()
@@ -159,7 +159,7 @@
 			# Sandbox
 			$label = Widget::Label();
 			$input = Widget::Input('settings[paypal-payments][sandbox]', 'yes', 'checkbox');
-			if($this->_Parent->Configuration->get('sandbox', 'paypal-payments') == 'yes') $input->setAttribute('checked', 'checked');
+			if(Symphony::Configuration()->get('sandbox', 'paypal-payments') == 'yes') $input->setAttribute('checked', 'checked');
 			$label->setValue($input->generate() . ' Enable testing mode');
 			$group->appendChild($label);
 			$group->appendChild(new XMLElement('p', 'Directs payments to PayPal’s Sandbox: <code>http://www.sandbox.paypal.com/</code>', array('class' => 'help')));
@@ -203,17 +203,17 @@
 
 		private function _get_paypal_business()
 		{
-			return $this->_Parent->Configuration->get('business', 'paypal-payments');
+			return Symphony::Configuration()->get('business', 'paypal-payments');
 		}
 
 		private function _sandbox_enabled()
 		{
-			return ($this->_Parent->Configuration->get('sandbox', 'paypal-payments') == 'yes') ? TRUE : FALSE;
+			return (Symphony::Configuration()->get('sandbox', 'paypal-payments') == 'yes') ? TRUE : FALSE;
 		}
 
 		private function _get_country()
 		{
-			$country = $this->_Parent->Configuration->get('country', 'paypal-payments');
+			$country = Symphony::Configuration()->get('country', 'paypal-payments');
 			return (isset($country)) ? $country : 'United States';
 		}
 
@@ -414,11 +414,11 @@
 			$url = $this->_build_paypay_url();
 
 			# Build up faker HTML output
-			$output = '<html><head><title>Continue to PayPal</title></head>
+			$output = '<html><head><title>Continue to PayPal</title>
 <style type="text/css">button{background:#eee;border:3px #ccc solid;color:#444;display:block;font:normal 200%/1.4 Georgia, Palatino, serif;margin:19% auto 40px;padding:20px 40px;-moz-border-radius:30px;-webkit-border-radius:30px;cursor:pointer;}button:hover{background:#444;color:#fff;border-color:#222;}</style>
 <script type="text/javascript">
 document.write(\'<style type="text/css">button{display:none}</style>\');
-</script>
+</script></head>
 <body onload="document.forms.paypal.submit();">
 <form id="paypal" method="post" action="'.$url.'">';
 			foreach($data as $field => $value)
@@ -429,6 +429,7 @@ document.write(\'<style type="text/css">button{display:none}</style>\');
 </form>
 </body>
 </html>';
+			header('Content-Type: text/html');
 			print($output);
 			exit();
 		}
