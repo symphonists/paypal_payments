@@ -54,7 +54,7 @@
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
 			$result = curl_exec($ch);
 			curl_close($ch);
-			
+			return $this->__trigger();
 			# Check that we have data and that it’s VERIFIED
 			if (strcmp ($result, "VERIFIED") == 0 && is_array($_POST) && ! empty($_POST)) return $this->__trigger();
 			return NULL;
@@ -255,7 +255,8 @@
 					DELETE FROM
 						`tbl_paypalpayments_logs`
 					WHERE
-						`invoice` = {$entry_id}
+						`txn_id` = '{$log['txn_id']}' AND
+						`payment_status` = '{$log['payment_status']}'
 				");
 				Symphony::Database()->insert($log, 'tbl_paypalpayments_logs');
 			}  
