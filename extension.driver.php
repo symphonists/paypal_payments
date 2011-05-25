@@ -162,7 +162,7 @@
 			if(Symphony::Configuration()->get('sandbox', 'paypal-payments') == 'yes') $input->setAttribute('checked', 'checked');
 			$label->setValue($input->generate() . ' Enable testing mode');
 			$group->appendChild($label);
-			$group->appendChild(new XMLElement('p', 'Directs payments to PayPal’s Sandbox: <code>http://www.sandbox.paypal.com/</code>', array('class' => 'help')));
+			$group->appendChild(new XMLElement('p', 'Directs payments to PayPal’s Sandbox: <code>https://www.sandbox.paypal.com/</code>', array('class' => 'help')));
 
 			$context['wrapper']->appendChild($group);
 		}
@@ -226,7 +226,7 @@
 			);
 
 			if ($this->_sandbox_enabled()) {
-				$url = 'http://www.sandbox.paypal.com';
+				$url = 'https://www.sandbox.paypal.com';
 			} else if ($default == true) {
 				$url = 'https://www.paypal.' . $countries_tld['United States'];
 			} else {
