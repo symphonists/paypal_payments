@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension id="paypal_payments" status="released" xmlns="http://symphony-cms.com/schemas/extension/1.0">
+	<name>PayPal Payments</name>
+	<description>Process and log transactions</description>
+	<repo type="github">https://github.com/symphonists/paypal_payments</repo>
+	<url type="discuss">http://symphony-cms.com/discuss/thread/25718/</url>
+	<types>
+		<type>Events</type>
+		<type>Third Party Integration</type>
+	</types>
+	<authors>
+		<author>
+			<name github="symphonists" symphony="community">Symphony Community</name>
+		</author>
+	</authors>
+	<releases>
+		<release version="1.0.4" date="2011-05-01" min="2.2" max="2.2.x" />
+	</releases>
+</extension>

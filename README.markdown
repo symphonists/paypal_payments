@@ -1,9 +1,4 @@
 # PayPal Payments #
- 
-Version: 1.0.4  
-Author: [Max Wheeler](http://makenosound.com)  
-Build Date: 2011-05-01  
-Compatibility: Symphony 2.2+
 
 The *PayPal Payments* extension allows you to reroute standard Symphony events
 to PayPal Standard Payments.
@@ -175,22 +170,3 @@ As the information needs to be submitted to PayPal via POST and that POST data c
 
 [1]: https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_Appx_websitestandard_htmlvariables
 [2]: https://cms.paypal.com/cms_content/US/en_US/files/developer/IPNGuide.pdf
-
-## Changelog ##
-
-**1.0.4**
-
-Symphony 2.2 compatibility:
-
-* Using new accessors
-* Fixed XML output from IPN event
-* Fix #1: IPN calls getting logged multiple times
-* Force HTML headers for the auto-submitting form
-
-**1.0.3**
-
-* Make IPN validate calls *only* to `www.paypal.com`, regardless of TLD
-
-**1.0.2**
-
-* [designermonkey](http://github.com/designermonkey): Fixed error on events save
