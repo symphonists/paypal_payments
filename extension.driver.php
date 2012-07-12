@@ -64,7 +64,7 @@
 					`invoice` varchar(255) NOT NULL,
 					`verify_sign` varchar(255) NOT NULL,
 					PRIMARY KEY (`id`)
-				)
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		  return true;
 		}
@@ -186,6 +186,7 @@
 		  $nav[] = array(
 				'location'	=> 261,
 				'name'		=> 'PayPal Payments',
+				'type' 		=> 'content',
 				'children'	=> array(
 					array(
 						'name'		=> 'Transactions',
