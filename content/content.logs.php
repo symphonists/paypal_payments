@@ -8,10 +8,10 @@
 		protected $_status = '';
 		protected $_driver = NULL;
 		
-		public function __construct(&$parent)
+		public function __construct()
 		{
-			parent::__construct($parent);
-			$this->_driver = Administration::instance()->ExtensionManager->create('paypal_payments');
+			parent::__construct();
+			$this->_driver = Symphony::ExtensionManager()->create('paypal_payments');
 		}
 		
 		public function __actionIndex()
@@ -30,7 +30,7 @@
 							");
 						}
 
-						redirect(URL . '/symphony/extension/paypal_payments/logs/');
+						redirect(SYMPHONY_URL . '/extension/paypal_payments/logs/');
 						break;
 				}
 			}
@@ -52,6 +52,7 @@
 			$pages = ceil($total / $per_page);
 								
 			$sectionManager = new SectionManager(Administration::instance());
+			
 			$entryManager = new EntryManager(Administration::instance());
 			
 			$th = array(
@@ -92,7 +93,7 @@
 						$column = array_shift($section->fetchFields());
 						$data = $entry->getData($column->get('id'));
 						# Build link to parent section
-						$link = URL . '/symphony/publish/' . $section->get('handle') . '/edit/' . $entry->get('id') . '/';
+						$link = SYMPHONY_URL . '/publish/' . $section->get('handle') . '/edit/' . $entry->get('id') . '/';
 
 						# Date
 						$col[] = Widget::TableData( Widget::Anchor( General::sanitize($log_invoice), $link ) );
@@ -148,21 +149,19 @@
 				Widget::TableBody($tb), 'selectable'
 			);
 			
-			$this->Form->appendChild($table);
 			
+			$this->Form->appendChild($table);
+
 			$actions = new XMLElement('div');
 			$actions->setAttribute('class', 'actions');
-			
+
 			$options = array(
-				array(NULL, FALSE, 'With Selected...'),
-				array('delete', FALSE, 'Delete')									
+				array(null, false, __('With Selected...')),
+				array('delete', false, __('Delete'))
 			);
 
-			$actions->appendChild(Widget::Select('with-selected', $options));
-			$actions->appendChild(Widget::Input('action[apply]', 'Apply', 'submit'));
-			
+			$actions->appendChild(Widget::Apply($options));
 			$this->Form->appendChild($actions);
-			
 			# Pagination:
 			if ($pages > 1) {
 				$ul = new XMLElement('ul');
