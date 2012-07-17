@@ -15,10 +15,10 @@
 					);						 
 		}
 		
-		public function __construct(&$parent)
+		public function __construct()
 		{
-			parent::__construct($parent);
-			$this->_driver = Symphony::Engine()->ExtensionManager->create('paypal_payments');
+			parent::__construct();
+			$this->_driver = Symphony::ExtensionManager()->create('paypal_payments');
 		}
 		
 		public function load()
@@ -66,7 +66,7 @@
 			$docs[] = '
 <p>This event is used to deal with data returned by PayPal&#8217;s Instant Payment Notification (IPN). It does the following:</p>
 <ol>
-	<li>Saves the transaction details to <a href="' . URL . '/symphony/extension/paypal_payments/logs/">the log</a>.</li>
+	<li>Saves the transaction details to <a href="' . SYMPHONY_URL . '/extension/paypal_payments/logs/">the log</a>.</li>
 	<li>Reconciles the data return by PayPal with matching fields in the originating entry.</li>
 	<li>Outputs said data as XML.</li>
 </ol>
