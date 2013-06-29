@@ -82,9 +82,16 @@
 					$col = array();
 					# Spit out $log_name vars
 					extract($log, EXTR_PREFIX_ALL, 'log');
+					$prefix = $this->_driver->_get_invoice_prefix();
+					$log_invoice_to_search_on = $log_invoice;
+					
+					# If prefix exists, lets remove it to link to an entry.
+					if (substr($log_invoice, 0, strlen($prefix)) == $prefix) {
+						$log_invoice_to_search_on = substr($log_invoice, strlen($prefix));
+					}
 					
 					# Get the entry/section data
-					$entries = $entryManager->fetch($log_invoice, NULL, NULL, NULL, NULL, NULL, FALSE, TRUE);
+					$entries = $entryManager->fetch($log_invoice_to_search_on, NULL, NULL, NULL, NULL, NULL, FALSE, TRUE);
 					$entry = $entries[0];
 					if (isset($entry))
 					{
