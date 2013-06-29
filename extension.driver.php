@@ -12,8 +12,8 @@
 		public function about()
 		{
 			return array('name' => 'PayPal Payments',
-						 'version' => '1.0.4',
-						 'release-date' => '2011-05-01',
+						 'version' => '1.2',
+						 'release-date' => '2013-06-29',
 						 'author' => array('name' => 'Max Wheeler',
 										   'website' => 'http://makenosound.com/',
 										   'email' => 'max@makenosound.com'),
@@ -131,6 +131,12 @@
 			$group->setAttribute('class', 'settings');
 			$group->appendChild(new XMLElement('legend', 'PayPal Payments'));
 
+			# Add Invoice Prefix field
+			$label = Widget::Label('Invoice Prefix');
+			$label->appendChild(Widget::Input('settings[paypal-payments][prefix]', General::Sanitize($this->_get_invoice_prefix())));
+			$group->appendChild($label);
+			$group->appendChild(new XMLElement('p', 'Set a prefix of the Invoice(Optional).', array('class' => 'help')));
+
 			# Add Merchant Email field
 			$label = Widget::Label('Merchant Email/Account ID');
 			$label->appendChild(Widget::Input('settings[paypal-payments][business]', General::Sanitize($this->_get_paypal_business())));
@@ -216,6 +222,12 @@
 		{
 			$country = Symphony::Configuration()->get('country', 'paypal-payments');
 			return (isset($country)) ? $country : 'United States';
+		}
+
+		public function _get_invoice_prefix()
+		{
+			$prefix = Symphony::Configuration()->get('prefix', 'paypal-payments');
+			return (isset($prefix)) ? $prefix: '';
 		}
 
 		public function _build_paypay_url($default = false)
@@ -380,7 +392,7 @@
 
 			# Set the default dataset
 			$data = array(
-				'invoice' =>		$context['entry']->get('id'),
+				'invoice' =>		$this->_get_invoice_prefix().$context['entry']->get('id'),
 				'business' =>		$this->_get_paypal_business()
 			);
 

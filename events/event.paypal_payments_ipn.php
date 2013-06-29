@@ -213,7 +213,13 @@
 				}
 				
 				# Reconcile with original entry
+				$prefix = $this->_driver->_get_invoice_prefix();
 				$entry_id = $log['invoice'];
+
+				# Remove Prefix if it exists
+				if (substr($entry_id, 0, strlen($prefix)) == $prefix) {
+					$entry_id = substr($entry_id, strlen($prefix));
+				}
 				
 				$entryManager = new EntryManager(Symphony::Engine());
 				$fieldManager = new FieldManager(Symphony::Engine());
