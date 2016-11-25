@@ -117,7 +117,21 @@
 					'delegate' => 'AddCustomPreferenceFieldsets',
 					'callback' => 'append_preferences'
 				),
+				array(
+					'page' => '/frontend/',
+					'delegate' => 'FrontendParamsResolve',
+					'callback' => 'addPaypalParams'
+				),
 			);
+		}
+
+		/*-------------------------------------------------------------------------
+			Append Paypal Params 
+			-------------------------------------------------------------------------*/
+
+		public function addPaypalParams(array $context = null) {
+			$context['params']['paypal-url'] = $this->_build_paypay_url();
+			$context['params']['paypal-business'] = $this->_get_paypal_business();
 		}
 
 		/*-------------------------------------------------------------------------
@@ -130,6 +144,12 @@
 			$group = new XMLElement('fieldset');
 			$group->setAttribute('class', 'settings');
 			$group->appendChild(new XMLElement('legend', 'PayPal Payments'));
+
+			# Add Sandbox Merchant Email field
+			$label = Widget::Label('Sandbox Email/Account ID');
+			$label->appendChild(Widget::Input('settings[paypal-payments][sandbox-business]', General::Sanitize($this->_get_paypal_business())));
+			$group->appendChild($label);
+			$group->appendChild(new XMLElement('p', 'The merchant email address or account ID of the sandbox payment recipient.', array('class' => 'help')));
 
 			# Add Merchant Email field
 			$label = Widget::Label('Merchant Email/Account ID');
@@ -204,7 +224,11 @@
 
 		private function _get_paypal_business()
 		{
-			return Symphony::Configuration()->get('business', 'paypal-payments');
+			if ($this->_sandbox_enabled()){
+				return Symphony::Configuration()->get('sandbox-business', 'paypal-payments');
+			} else {
+				return Symphony::Configuration()->get('business', 'paypal-payments');
+			}
 		}
 
 		private function _sandbox_enabled()
