@@ -1,4 +1,4 @@
-# PayPal Payments #
+# PayPal Payments, digital payment become more fast #
 
 The *PayPal Payments* extension allows you to reroute standard Symphony events
 to PayPal Standard Payments.
